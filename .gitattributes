@@ -1,0 +1,5 @@
+# Los scripts de shell tienen que quedar con LF o fallan dentro de Docker
+* text=auto
+mvnw text eol=lf
+*.sh text eol=lf
+*.cmd text eol=crlf

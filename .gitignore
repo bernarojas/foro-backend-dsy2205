@@ -1,0 +1,22 @@
+# Maven / Java
+target/
+*.class
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# Wallet de Oracle Cloud (credenciales: nunca al repositorio)
+wallet/
+Wallet_*/
+*.p12
+*.sso
+
+# Sistema
+.DS_Store
+Thumbs.db
