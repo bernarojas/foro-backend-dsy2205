@@ -1,0 +1,60 @@
+# Base de datos Oracle para desarrollo local + los dos microservicios.
+#
+#   Solo la base:          docker compose up -d oracle
+#   Base + microservicios: docker compose --profile apps up -d --build
+#
+# La primera vez la base tarda ~1 minuto: crea el usuario FORO y ejecuta
+# database/02_script_foro.sql (tablas + datos de prueba).
+services:
+  oracle:
+    image: gvenzl/oracle-free:23-slim-faststart
+    container_name: foro-oracle
+    ports:
+      - "1521:1521"
+    environment:
+      ORACLE_PASSWORD: Oracle_Duoc_2026      # clave de SYS y SYSTEM
+      APP_USER: FORO
+      APP_USER_PASSWORD: Foro_Duoc_2026
+    volumes:
+      - foro-oracle-data:/opt/oracle/oradata
+      - ./database:/scripts:ro
+      - ./docker/initdb:/container-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  ms-usuarios:
+    profiles: ["apps"]
+    build: ./ms-usuarios
+    container_name: foro-ms-usuarios
+    ports:
+      - "8081:8081"
+    environment:
+      DB_URL: jdbc:oracle:thin:@//oracle:1521/FREEPDB1
+      DB_USER: FORO
+      DB_PASSWORD: Foro_Duoc_2026
+      JWT_SECRET: clave-de-desarrollo-foro-duoc-dsy2205-cambiar-en-produccion
+    depends_on:
+      oracle:
+        condition: service_healthy
+
+  ms-foro:
+    profiles: ["apps"]
+    build: ./ms-foro
+    container_name: foro-ms-foro
+    ports:
+      - "8082:8082"
+    environment:
+      DB_URL: jdbc:oracle:thin:@//oracle:1521/FREEPDB1
+      DB_USER: FORO
+      DB_PASSWORD: Foro_Duoc_2026
+      JWT_SECRET: clave-de-desarrollo-foro-duoc-dsy2205-cambiar-en-produccion
+    depends_on:
+      oracle:
+        condition: service_healthy
+
+volumes:
+  foro-oracle-data:
