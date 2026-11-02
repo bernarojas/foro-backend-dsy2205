@@ -38,11 +38,11 @@ chore: Docker Compose con Oracle Free
 
 ## Subir el repositorio a GitHub
 
-1. Crear un repositorio vacío en GitHub (sin README), por ejemplo `foro-backend-dsy2205`.
+1. Repositorio: https://github.com/bernarojas/foro-backend-dsy2205 (creado vacío, sin README).
 2. En la carpeta del proyecto:
 
 ```bash
-git remote add origin https://github.com/<tu-usuario>/foro-backend-dsy2205.git
+git remote add origin https://github.com/bernarojas/foro-backend-dsy2205.git
 git push -u origin main
 git push origin develop feature/base-de-datos feature/ms-usuarios feature/ms-foro feature/postman-docs
 git push origin --tags
