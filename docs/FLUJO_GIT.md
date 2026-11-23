@@ -1,7 +1,7 @@
 # Organización del trabajo en git
 
-La pauta evalúa el uso de git y de herramientas colaborativas (criterio 1, 10 puntos). Este es el
-flujo usado en el repositorio.
+La pauta evalúa el uso de git y de herramientas colaborativas (criterio 1). Este es el flujo usado
+en el repositorio.
 
 ## Ramas
 
@@ -9,43 +9,56 @@ flujo usado en el repositorio.
 |---|---|
 | `main` | Lo entregable: siempre compila y pasa la colección de Postman |
 | `develop` | Integración de las ramas de trabajo |
+
+Semana 2 (BackEnd, etiqueta `v1.0-semana2`):
+
+| Rama | Para qué |
+|---|---|
 | `feature/base-de-datos` | Script de Oracle y Docker Compose |
 | `feature/ms-usuarios` | Microservicio de usuarios, roles e inicio de sesión |
 | `feature/ms-foro` | Microservicio del foro |
 | `feature/postman-docs` | Colección de Postman, README y guion del video |
 
+Semana 5 (FrontEnd, arquetipo, moderación y nube, etiqueta `v2.0-semana5`):
+
+| Rama | Para qué |
+|---|---|
+| `feature/arquetipo` | Arquetipo Maven de los microservicios |
+| `feature/ms-moderacion` | Microservicio de moderación generado con el arquetipo, su tabla y sus pruebas de Postman |
+| `feature/frontend-angular` | Aplicación Angular: pantallas, validaciones, roles y datos en arreglos |
+| `feature/docker-nube` | Docker del FrontEnd, compose de la nube con Oracle Cloud y documentación |
+
 Cada rama `feature/*` sale de `develop` y vuelve a ella con un *merge* (o un Pull Request en GitHub).
-Al terminar, `develop` se une a `main` y se etiqueta la entrega (`v1.0-semana2`).
+Al terminar, `develop` se une a `main` y se etiqueta la entrega.
 
 ## Mensajes de commit
 
 Formato corto en español, con un prefijo que dice el tipo de cambio:
 
 ```
-feat(ms-foro): búsqueda de temas por texto, categoría y autor
+feat(frontend): panel de moderación con baneo, restauración e historial
+feat(ms-moderacion): estrategias de moderación para temas y comentarios
 fix(ms-usuarios): un usuario bloqueado ya no puede usar su token
 docs: guion del video de presentación
-chore: Docker Compose con Oracle Free
+chore: Docker Compose de la nube con Oracle Cloud
 ```
 
 ## Herramientas colaborativas
 
 - **GitHub**: repositorio, Pull Requests de cada `feature/*` hacia `develop`.
 - **GitHub Projects** (tablero Kanban: Por hacer / En curso / Hecho) con una tarjeta por requisito del caso:
-  CRUD de usuarios, inicio de sesión, roles, búsqueda de temas, publicación, comentarios,
-  script Oracle, colección Postman, video.
+  pantallas del FrontEnd, validaciones, roles, arquetipo, microservicio de moderación, Docker, Oracle
+  Cloud, colección Postman, video.
 - **Issues** enlazados a cada tarjeta y cerrados desde el Pull Request (`Closes #3`).
 
-## Subir el repositorio a GitHub
+## Subir los cambios a GitHub
 
-1. Repositorio: https://github.com/bernarojas/foro-backend-dsy2205 (creado vacío, sin README).
-2. En la carpeta del proyecto:
+Repositorio: https://github.com/bernarojas/foro-backend-dsy2205
 
 ```bash
-git remote add origin https://github.com/bernarojas/foro-backend-dsy2205.git
-git push -u origin main
-git push origin develop feature/base-de-datos feature/ms-usuarios feature/ms-foro feature/postman-docs
+git push origin main develop
+git push origin feature/arquetipo feature/ms-moderacion feature/frontend-angular feature/docker-nube
 git push origin --tags
 ```
 
-3. Pegar el enlace del repositorio en el AVA junto con el .zip y el enlace del video.
+Después, pegar el enlace del repositorio en el AVA junto con el .zip y el enlace del video.

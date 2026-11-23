@@ -20,3 +20,6 @@ Wallet_*/
 # Sistema
 .DS_Store
 Thumbs.db
+
+# Variables del despliegue (credenciales)
+.env

@@ -1,44 +1,60 @@
-# Guion para la presentación en Kaltura (8 a 9 minutos)
+# Guion para la presentación en Kaltura (9 a 10 minutos)
 
-La pauta pide mostrar **funcionamiento, características, diseño y funcionalidades con Postman**, y
-**verificar en tiempo real** que la información queda guardada en Oracle. El video debe durar entre
-7 y 10 minutos.
+La pauta de la Semana 5 pide mostrar en el video: **despliegue en la nube, ejecución mediante la URL
+pública, conexión con Oracle Cloud, funcionamiento, características, diseño y funcionalidades de
+todas las opciones, tanto del FrontEnd como del BackEnd** (este último con Postman), además de los
+**patrones y el arquetipo**. Debe durar entre 7 y 10 minutos y mostrar todo en tiempo real.
 
 ## Antes de grabar
 
-- [ ] `docker compose --profile apps up -d --build` (o los dos microservicios desde el IDE).
-- [ ] Ejecutar `database/02_script_foro.sql` para partir con los datos limpios.
-- [ ] Postman abierto con la colección importada y la carpeta "0. Inicio de sesión" sin ejecutar.
-- [ ] SQL Developer (o la consola de Oracle Cloud) conectado como `FORO`, con esta consulta lista:
+- [ ] Todo desplegado en la nube según `docs/DESPLIEGUE_NUBE.md` y respondiendo en la IP pública.
+- [ ] Ejecutar `database/02_script_foro.sql` en Oracle Cloud para partir con los datos limpios.
+- [ ] En el FrontEnd, ingresar como administrador y usar **Restablecer datos de ejemplo**; cerrar sesión.
+- [ ] Postman con la colección importada, las variables `baseUsuarios`, `baseForo` y `baseModeracion`
+      apuntando a la IP pública, y la carpeta "0. Inicio de sesión" sin ejecutar.
+- [ ] Consola de Oracle Cloud abierta en **Database Actions → SQL** como `FORO`, con esta consulta lista:
 
 ```sql
 SELECT 'FORO_ROL' TABLA, COUNT(*) REGISTROS FROM FORO_ROL
 UNION ALL SELECT 'FORO_USUARIO', COUNT(*) FROM FORO_USUARIO
 UNION ALL SELECT 'FORO_CATEGORIA', COUNT(*) FROM FORO_CATEGORIA
 UNION ALL SELECT 'FORO_TEMA', COUNT(*) FROM FORO_TEMA
-UNION ALL SELECT 'FORO_COMENTARIO', COUNT(*) FROM FORO_COMENTARIO;
+UNION ALL SELECT 'FORO_COMENTARIO', COUNT(*) FROM FORO_COMENTARIO
+UNION ALL SELECT 'FORO_MODERACION', COUNT(*) FROM FORO_MODERACION;
 ```
 
-- [ ] El IDE abierto en el proyecto y el repositorio de GitHub en el navegador.
+- [ ] Una terminal conectada por SSH al servidor, el IDE abierto en el proyecto y el repositorio de
+      GitHub en el navegador.
+- [ ] El navegador con las herramientas de desarrollo listas para cambiar el tamaño de pantalla (F12 →
+      modo dispositivo).
 
 ## Guion
 
 | Tiempo | Qué mostrar | Qué decir |
 |---|---|---|
-| 0:00 a 0:40 | Portada / README | Presentarse, el caso (Sistema de Foros en Línea) y qué dos microservicios se hicieron: usuarios con inicio de sesión, y foro con búsqueda, publicación y comentarios. |
-| 0:40 a 1:40 | Diagrama del README y el IDE | **Diseño**: dos proyectos Spring Boot independientes (puertos 8081 y 8082), una base Oracle, cada microservicio dueño de sus tablas. Mostrar las capas: controller, service, repository, model, dto. |
-| 1:40 a 2:30 | `02_script_foro.sql` y SQL Developer | **Base de datos**: las 5 tablas, llaves y restricciones; ejecutar la consulta de conteo (3, 5, 6, 7, 9 registros). Seis categorías y tres roles. |
-| 2:30 a 3:00 | `application.properties` | Conexión a Oracle por variables de entorno y la clave JWT compartida. |
-| 3:00 a 4:00 | Postman, carpeta 0 | **Inicio de sesión**: login del administrador (mostrar el token y el rol), clave incorrecta (401) y cuenta bloqueada (403). Explicar que el token guarda id, nombre y rol, y que lo valida también ms-foro. |
-| 4:00 a 5:15 | Postman, carpetas 1 y 2 | **CRUD de usuarios y roles**: registrar a Pedro (POST), listar con filtros (GET), modificar (PUT) y un USUARIO intentando cambiarse el rol (403). **Pausa en SQL Developer**: mostrar a Pedro en `FORO_USUARIO` con la clave encriptada. El administrador lo bloquea y su token deja de servir. Eliminar (DELETE) y volver a consultar en Oracle. |
-| 5:15 a 6:00 | Postman, carpeta 3 | **Categorías**: estadística por categoría (consulta con agrupación), crear como ADMINISTRADOR y como USUARIO (403), no se puede borrar una categoría con temas (409). |
-| 6:00 a 7:30 | Postman, carpeta 4 | **Foro**: búsqueda por texto, por categoría y por autor; los más comentados; ver un tema con sus comentarios. Publicar un tema con el token de Diego (el autor sale del token). **Pausa en Oracle**: el tema nuevo en `FORO_TEMA`. Modificarlo, y Valentina intentando modificarlo (403). |
-| 7:30 a 8:30 | Postman, carpeta 5 | **Comentarios**: Valentina comenta; Diego no puede editar ni borrar ese comentario (403); el MODERADOR sí lo elimina. El autor elimina su tema. **Consulta final en Oracle**: los conteos vuelven a 3, 5, 6, 7, 9. |
-| 8:30 a 9:00 | GitHub | Repositorio, ramas por microservicio y commits. Cierre. |
+| 0:00 a 0:30 | README en GitHub | Presentarse y el caso: Sistema de Foros en Línea, "Tertulia". FrontEnd en Angular, tres microservicios Spring Boot, Oracle Cloud y todo en Docker. |
+| 0:30 a 1:20 | Terminal SSH: `docker compose -f docker-compose.cloud.yml ps` · `docker-compose.cloud.yml` | **Despliegue en la nube**: cuatro contenedores (frontend y tres microservicios) en el servidor. Mostrar el archivo compose y que la conexión a Oracle Cloud va por el wallet y las variables de `.env`. |
+| 1:20 a 1:50 | Navegador en `http://IP_PUBLICA/` y `http://IP_PUBLICA:8081/api/roles` | **URL pública**: el FrontEnd y un microservicio respondiendo desde internet. |
+| 1:50 a 2:40 | FrontEnd: portada, una categoría, buscar "spring", abrir un tema | **Diseño**: nombre, logo, colores e ilustraciones propias. Categorías (6), búsqueda por texto, categoría y autor, tema con sus comentarios. Sin sesión se puede leer, no publicar. |
+| 2:40 a 3:10 | F12 → celular, tablet, escritorio | **Tres tamaños de pantalla** con la grilla de 12 columnas: 1, 2 y 3 columnas de categorías; menú desplegable y tablas apiladas en celular. |
+| 3:10 a 4:10 | Registro, luego Recuperar contraseña | **Registro** con validaciones: dejar campos vacíos, correo mal escrito, y la contraseña con sus 7 requisitos marcándose. Crear la cuenta. Cerrar sesión y **recuperar contraseña**: correo, código simulado, contraseña nueva. |
+| 4:10 a 5:00 | Ingresar como Usuario (botón de prueba) | **Rol USUARIO**: publicar un tema (mostrar validaciones), comentar, modificar y eliminar lo propio. **Perfil**: cambiar nombre, color y contraseña. |
+| 5:00 a 5:50 | Ingresar como Moderador | **Rol MODERADOR**: el menú cambia. Banear un comentario desde el tema (motivo obligatorio), ver el panel de moderación, restaurar y el historial. Intentar entrar a `/admin/usuarios`: no tiene permiso. |
+| 5:50 a 6:30 | Ingresar como Administrador | **Rol ADMINISTRADOR**: usuarios (cambiar rol, bloquear, crear), categorías (crear una con ícono y color). Reglas: no se puede quitar al último administrador. |
+| 6:30 a 7:10 | IDE: `frontend/src/app/core` y `arquetipo/` | **Patrones y arquetipo**: en el FrontEnd, Repository sobre arreglos, servicios Singleton como fachada, signals (Observer). En el BackEnd, el arquetipo Maven con las capas y `ms-moderacion` generado desde él; Strategy en la moderación. |
+| 7:10 a 8:00 | Postman, carpetas 0 a 2 · Oracle Cloud | **BackEnd con Postman**: login (token y rol), registrar un usuario (POST). **Pausa en Oracle Cloud**: el usuario nuevo en `FORO_USUARIO` con la clave encriptada. Modificar y eliminar. |
+| 8:00 a 8:50 | Postman, carpetas 4 y 5 · Oracle Cloud | **ms-foro**: buscar, publicar un tema con el token de Diego, comentar. **Pausa en Oracle Cloud**: el tema en `FORO_TEMA`. |
+| 8:50 a 9:40 | Postman, carpeta 6 · Oracle Cloud | **ms-moderacion**: un USUARIO intenta banear (403); el moderador banea con motivo; el tema deja de verse en ms-foro (404); el historial en `FORO_MODERACION`; restaurar. Ejecutar la consulta de conteos. |
+| 9:40 a 10:00 | GitHub: ramas y commits | Trabajo en git con ramas por funcionalidad. Cierre. |
+
+Si el tiempo queda justo, la colección completa también se puede mostrar con el **Runner** de
+Postman (93 solicitudes, 211 verificaciones) en vez de solicitud por solicitud.
 
 ## Frases útiles
 
-- "El microservicio del foro no le pregunta nada al de usuarios: valida la firma del token con la misma clave."
-- "Los permisos se revisan en la capa de servicio, no solo en el controlador: un USUARIO que llame directo a la API igual recibe 403."
-- "Todos los errores salen en JSON con el código HTTP correcto: 400, 401, 403, 404 o 409."
-- "Las claves se guardan con BCrypt; la API nunca las devuelve."
+- "El FrontEnd y el BackEnd funcionan por separado en esta entrega: el FrontEnd maneja la información con arreglos dentro de repositorios, así que conectarlo después solo cambia esa capa."
+- "Cada servicio de Angular equivale a un microservicio: usuarios, foro y moderación."
+- "Los permisos están en dos lugares: las guardas deciden quién entra a cada pantalla y los servicios vuelven a revisar el rol antes de cada acción."
+- "Los tres microservicios validan el mismo token; ninguno necesita llamar a otro."
+- "El microservicio de moderación nació del arquetipo: por eso tiene las mismas capas, la misma seguridad y el mismo formato de errores que los otros dos."
+- "Con Strategy, moderar otro tipo de publicación sería agregar una clase, sin tocar el servicio."

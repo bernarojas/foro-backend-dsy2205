@@ -1,0 +1,50 @@
+# Despliegue en la nube: FrontEnd + los tres microservicios en Docker,
+# conectados a la base de datos de Oracle Cloud (Autonomous Database) con wallet.
+#
+#   1. Copiar .env.example a .env y completar los datos de la base.
+#   2. Descomprimir el wallet de Oracle Cloud en la carpeta ./wallet (no se sube a git).
+#   3. docker compose -f docker-compose.cloud.yml up -d --build
+#
+#   FrontEnd:      http://<ip-publica>/
+#   ms-usuarios:   http://<ip-publica>:8081    ms-foro: :8082    ms-moderacion: :8083
+#
+# En el servidor hay que abrir los puertos 80, 8081, 8082 y 8083.
+x-microservicio: &microservicio
+  restart: unless-stopped
+  environment:
+    # /wallet es la carpeta del wallet dentro del contenedor (TNS_ADMIN).
+    DB_URL: jdbc:oracle:thin:@${DB_SERVICIO:?Falta DB_SERVICIO en .env}?TNS_ADMIN=/wallet
+    DB_USER: ${DB_USER:-FORO}
+    DB_PASSWORD: ${DB_PASSWORD:?Falta DB_PASSWORD en .env}
+    JWT_SECRET: ${JWT_SECRET:?Falta JWT_SECRET en .env}
+  volumes:
+    - ./wallet:/wallet:ro
+
+services:
+  ms-usuarios:
+    <<: *microservicio
+    build: ./ms-usuarios
+    container_name: foro-ms-usuarios
+    ports:
+      - "8081:8081"
+
+  ms-foro:
+    <<: *microservicio
+    build: ./ms-foro
+    container_name: foro-ms-foro
+    ports:
+      - "8082:8082"
+
+  ms-moderacion:
+    <<: *microservicio
+    build: ./ms-moderacion
+    container_name: foro-ms-moderacion
+    ports:
+      - "8083:8083"
+
+  frontend:
+    restart: unless-stopped
+    build: ./frontend
+    container_name: foro-frontend
+    ports:
+      - "80:80"
