@@ -29,6 +29,7 @@ export const routes: Routes = [
 
   // --- Administración: solo ADMINISTRADOR
   { path: 'admin/usuarios', title: 'Usuarios · Tertulia', canActivate: [conRol('ADMINISTRADOR')], loadComponent: () => import('./features/admin/usuarios/usuarios').then((m) => m.AdminUsuarios) },
+  { path: 'admin/servicios', title: 'Conexión con el BackEnd · Tertulia', canActivate: [conRol('ADMINISTRADOR')], loadComponent: () => import('./features/admin/servicios/servicios').then((m) => m.AdminServicios) },
   { path: 'admin/categorias', title: 'Categorías · Tertulia', canActivate: [conRol('ADMINISTRADOR')], loadComponent: () => import('./features/admin/categorias/categorias').then((m) => m.AdminCategorias) },
 
   { path: '**', title: 'Página no encontrada · Tertulia', loadComponent: () => import('./features/no-encontrada/no-encontrada').then((m) => m.NoEncontrada) },
