@@ -1,14 +1,15 @@
-# Despliegue en la nube: FrontEnd + los tres microservicios en Docker,
-# conectados a la base de datos de Oracle Cloud (Autonomous Database) con wallet.
+# FrontEnd + los tres microservicios en Docker Desktop, conectados a la base de datos
+# de Oracle Cloud (Autonomous Database) mediante su wallet. No levanta la base local.
 #
 #   1. Copiar .env.example a .env y completar los datos de la base.
 #   2. Descomprimir el wallet de Oracle Cloud en la carpeta ./wallet (no se sube a git).
-#   3. docker compose -f docker-compose.cloud.yml up -d --build
+#   3. docker compose -f docker-compose.oracle-cloud.yml up -d --build
 #
-#   FrontEnd:      http://<ip-publica>/
-#   ms-usuarios:   http://<ip-publica>:8081    ms-foro: :8082    ms-moderacion: :8083
+#   FrontEnd:      http://localhost:8084  (pantalla "Conexión con el BackEnd" para el administrador)
+#   ms-usuarios:   http://localhost:8081    ms-foro: http://localhost:8082    ms-moderacion: http://localhost:8083
 #
-# En el servidor hay que abrir los puertos 80, 8081, 8082 y 8083.
+# Usa los mismos nombres de contenedor que docker-compose.yml: al levantar uno se reemplazan los del otro.
+# Guía completa: docs/ORACLE_CLOUD.md
 x-microservicio: &microservicio
   restart: unless-stopped
   environment:
@@ -18,7 +19,7 @@ x-microservicio: &microservicio
     DB_PASSWORD: ${DB_PASSWORD:?Falta DB_PASSWORD en .env}
     JWT_SECRET: ${JWT_SECRET:?Falta JWT_SECRET en .env}
   volumes:
-    - ./wallet:/wallet:ro
+    - ${WALLET_DIR:-./wallet}:/wallet:ro
 
 services:
   ms-usuarios:
@@ -42,9 +43,10 @@ services:
     ports:
       - "8083:8083"
 
+  # El FrontEnd llega a los microservicios por sus nombres de servicio (ver frontend/nginx.conf).
   frontend:
     restart: unless-stopped
     build: ./frontend
     container_name: foro-frontend
     ports:
-      - "80:80"
+      - "${FRONTEND_PORT:-8084}:80"

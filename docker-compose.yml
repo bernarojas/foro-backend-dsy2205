@@ -6,7 +6,7 @@
 #   FrontEnd:      http://localhost:8084
 #   ms-usuarios:   http://localhost:8081    ms-foro: http://localhost:8082    ms-moderacion: http://localhost:8083
 #
-# Para la nube con Oracle Cloud (sin la base local) se usa docker-compose.cloud.yml.
+# Con la base en Oracle Cloud (sin la base local) se usa docker-compose.oracle-cloud.yml.
 #
 # La primera vez la base tarda ~1 minuto: crea el usuario FORO y ejecuta
 # database/02_script_foro.sql (tablas + datos de prueba).
