@@ -1,0 +1,14 @@
+{
+  "/servicios/usuarios": {
+    "target": "http://localhost:8081",
+    "pathRewrite": { "^/servicios/usuarios": "/api" }
+  },
+  "/servicios/foro": {
+    "target": "http://localhost:8082",
+    "pathRewrite": { "^/servicios/foro": "/api" }
+  },
+  "/servicios/moderacion": {
+    "target": "http://localhost:8083",
+    "pathRewrite": { "^/servicios/moderacion": "/api" }
+  }
+}

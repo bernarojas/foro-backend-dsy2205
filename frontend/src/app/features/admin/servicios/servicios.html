@@ -1,0 +1,181 @@
+<div class="container pagina">
+  <nav aria-label="Ruta de navegación">
+    <ol class="breadcrumb migas">
+      <li class="breadcrumb-item"><a routerLink="/">Inicio</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Conexión con el BackEnd</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
+    <h1 class="h3 mb-0"><i class="bi bi-hdd-network"></i> Conexión con el BackEnd</h1>
+    <button type="button" class="btn btn-acento" [disabled]="consultando()" (click)="consultar()">
+      <i class="bi bi-arrow-repeat"></i> {{ consultando() ? 'Consultando…' : 'Volver a consultar' }}
+    </button>
+  </div>
+  <p class="text-secondary mb-4">
+    El foro maneja su información con arreglos. Esta pantalla hace peticiones HTTP reales desde el contenedor del
+    FrontEnd a los tres microservicios para comprobar que se comunican entre sí y con la base de datos Oracle.
+  </p>
+
+  <!-- Un microservicio por tarjeta: 1 columna en celular y tablet, 3 en escritorio -->
+  <div class="row g-3 mb-4">
+    @for (tarjeta of tarjetas(); track tarjeta.servicio) {
+      <div class="col-12 col-lg-4">
+        <section class="tarjeta tarjeta-cuerpo h-100">
+          <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+            <div>
+              <h2 class="h5 mb-0">{{ tarjeta.nombre }}</h2>
+              <div class="small text-secondary">Puerto {{ tarjeta.puerto }} · {{ tarjeta.descripcion }}</div>
+            </div>
+            @if (tarjeta.enLinea === null) {
+              <span class="badge text-bg-light border">Consultando</span>
+            } @else if (tarjeta.enLinea) {
+              <span class="badge estado-activo"><i class="bi bi-check-circle-fill"></i> En línea</span>
+            } @else {
+              <span class="badge estado-bloqueado"><i class="bi bi-x-circle-fill"></i> Sin respuesta</span>
+            }
+          </div>
+
+          @if (tarjeta.enLinea) {
+            <dl class="row small mb-0 mt-3">
+              @for (dato of tarjeta.datos; track dato.etiqueta) {
+                <dt class="col-8 fw-normal text-secondary">{{ dato.etiqueta }}</dt>
+                <dd class="col-4 text-end fw-bold mb-1">{{ dato.valor }}</dd>
+              }
+              <dt class="col-8 fw-normal text-secondary">Respuesta</dt>
+              <dd class="col-4 text-end mb-0">HTTP {{ tarjeta.codigo }} · {{ tarjeta.milisegundos }} ms</dd>
+            </dl>
+          } @else if (tarjeta.enLinea === false) {
+            <p class="small text-danger mt-3 mb-0">
+              No respondió{{ tarjeta.codigo ? ' (HTTP ' + tarjeta.codigo + ')' : '' }}. Revisa el contenedor con
+              <code>docker compose ps</code> y sus registros con <code>docker logs foro-{{ tarjeta.nombre }}</code>.
+            </p>
+          }
+        </section>
+      </div>
+    }
+  </div>
+
+  <div class="row g-4">
+    <!-- Consulta con sesión -->
+    <div class="col-12 col-lg-5">
+      <section class="tarjeta tarjeta-cuerpo" aria-labelledby="tituloSesion">
+        <h2 class="titulo-seccion" id="tituloSesion"><i class="bi bi-key-fill"></i> Consulta con sesión (token JWT)</h2>
+        <p class="small text-secondary">
+          Inicia sesión en <strong>ms-usuarios</strong> con una cuenta de la base de datos. Con el token que entrega se
+          consultan datos protegidos en <strong>ms-usuarios</strong> y en <strong>ms-moderacion</strong>.
+        </p>
+
+        @if (errorSesion(); as mensaje) {
+          <div class="alert alert-danger" role="alert"><i class="bi bi-exclamation-triangle-fill"></i> {{ mensaje }}</div>
+        }
+
+        @if (sesion(); as s) {
+          <div class="alert alert-success" role="status">
+            <i class="bi bi-check-circle-fill"></i> Token recibido para <strong>{{ s.usuario.nombre }}</strong>
+            ({{ s.usuario.rol }}). Vence el {{ s.expira | date: 'dd/MM/y HH:mm' }}.
+          </div>
+
+          @if (porRol(); as r) {
+            <h3 class="h6 mt-3">Usuarios por rol <span class="text-secondary fw-normal">· ms-usuarios</span></h3>
+            @if (r.ok && r.datos) {
+              <ul class="list-unstyled small mb-0">
+                @for (fila of r.datos; track fila.rol) {
+                  <li class="d-flex justify-content-between border-bottom py-1">
+                    <span>{{ fila.rol }}</span>
+                    <span><strong>{{ fila.totalUsuarios }}</strong> ({{ fila.activos }} activos, {{ fila.bloqueados }} bloqueados)</span>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="small text-danger mb-0">{{ r.mensaje ?? 'Sin respuesta' }} (HTTP {{ r.codigo }}).</p>
+            }
+          }
+
+          @if (moderacion(); as m) {
+            <h3 class="h6 mt-3">Resumen de moderación <span class="text-secondary fw-normal">· ms-moderacion</span></h3>
+            @if (m.ok && m.datos) {
+              <ul class="list-unstyled small mb-0">
+                <li class="d-flex justify-content-between border-bottom py-1">
+                  <span>Temas</span><span><strong>{{ m.datos.temas.publicados }}</strong> publicados, <strong>{{ m.datos.temas.baneados }}</strong> baneados</span>
+                </li>
+                <li class="d-flex justify-content-between border-bottom py-1">
+                  <span>Comentarios</span><span><strong>{{ m.datos.comentarios.publicados }}</strong> publicados, <strong>{{ m.datos.comentarios.baneados }}</strong> baneados</span>
+                </li>
+                <li class="d-flex justify-content-between py-1">
+                  <span>Acciones en FORO_MODERACION</span><strong>{{ m.datos.totalAcciones }}</strong>
+                </li>
+              </ul>
+            } @else {
+              <p class="small text-danger mb-0">{{ m.mensaje ?? 'Sin respuesta' }} (HTTP {{ m.codigo }}).</p>
+            }
+          }
+
+          <button type="button" class="btn btn-sm btn-outline-secondary mt-3" (click)="cerrarSesionBackend()">Probar con otra cuenta</button>
+        } @else {
+          <form [formGroup]="form" (ngSubmit)="consultarConSesion()" novalidate>
+            <div class="mb-3">
+              <label class="form-label" for="email">Correo</label>
+              <input id="email" type="email" class="form-control" formControlName="email" autocomplete="off" [class.is-invalid]="error('email')">
+              @if (error('email'); as mensaje) {
+                <div class="invalid-feedback">{{ mensaje }}</div>
+              }
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="password">Contraseña</label>
+              <input id="password" type="password" class="form-control" formControlName="password" autocomplete="off" [class.is-invalid]="error('password')">
+              @if (error('password'); as mensaje) {
+                <div class="invalid-feedback">{{ mensaje }}</div>
+              } @else {
+                <div class="form-text">La de la base de datos. Un USUARIO recibe 403: las consultas son para moderadores y administradores.</div>
+              }
+            </div>
+            <button type="submit" class="btn btn-primary" [disabled]="ingresando()">
+              <i class="bi bi-box-arrow-in-right"></i> {{ ingresando() ? 'Consultando…' : 'Iniciar sesión y consultar' }}
+            </button>
+          </form>
+        }
+      </section>
+    </div>
+
+    <!-- Registro de peticiones -->
+    <div class="col-12 col-lg-7">
+      <section class="tarjeta" aria-labelledby="tituloPeticiones">
+        <div class="tarjeta-cuerpo d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom">
+          <h2 class="titulo-seccion mb-0" id="tituloPeticiones"><i class="bi bi-arrow-left-right"></i> Peticiones HTTP</h2>
+          <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="backend.peticiones().length === 0" (click)="backend.limpiarRegistro()">Limpiar</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table tabla tabla-apilable">
+            <thead>
+              <tr>
+                <th scope="col">Petición</th>
+                <th scope="col">Microservicio</th>
+                <th scope="col">Código</th>
+                <th scope="col">Tiempo</th>
+                <th scope="col">Hora</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of backend.peticiones(); track p.id) {
+                <tr>
+                  <td class="principal"><span class="badge text-bg-light border me-1">{{ p.metodo }}</span><code>{{ p.ruta }}</code></td>
+                  <td data-titulo="Microservicio">ms-{{ p.servicio }}</td>
+                  <td data-titulo="Código">
+                    <span class="badge" [class.estado-activo]="p.codigo >= 200 && p.codigo < 300" [class.estado-bloqueado]="p.codigo < 200 || p.codigo >= 300">
+                      {{ p.codigo || 'sin respuesta' }}
+                    </span>
+                  </td>
+                  <td data-titulo="Tiempo" class="text-nowrap">{{ p.milisegundos }} ms</td>
+                  <td data-titulo="Hora" class="text-nowrap small">{{ p.hora | date: 'HH:mm:ss' }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="principal"><div class="vacio py-4"><p class="mb-0">Todavía no hay peticiones.</p></div></td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
