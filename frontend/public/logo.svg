@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Tertulia">
+  <!-- Logo de Tertulia: dos globos de conversación que se cruzan -->
+  <rect width="64" height="64" rx="15" fill="#14213d"/>
+  <path d="M14 17h25a6 6 0 0 1 6 6v12a6 6 0 0 1-6 6H27l-8 7v-7h-5a6 6 0 0 1-6-6V23a6 6 0 0 1 6-6z" fill="#fca311"/>
+  <path d="M30 27h20a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5h-3v6l-7-6H30a5 5 0 0 1-5-5V32a5 5 0 0 1 5-5z" fill="#ffffff" stroke="#14213d" stroke-width="2.5"/>
+  <circle cx="33.5" cy="37" r="2" fill="#14213d"/>
+  <circle cx="40" cy="37" r="2" fill="#14213d"/>
+  <circle cx="46.5" cy="37" r="2" fill="#14213d"/>
+</svg>

@@ -1,0 +1,98 @@
+<div class="container acceso">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-9 col-lg-6 col-xl-5">
+      <div class="tarjeta acceso-formulario">
+        <div class="text-center mb-3">
+          <img src="logo.svg" alt="" width="52" height="52" style="border-radius: 13px">
+        </div>
+        <h1 class="h3 text-center mb-1">Recuperar contraseña</h1>
+        <p class="text-secondary text-center mb-4">Te ayudamos a volver a entrar en tres pasos.</p>
+
+        <ol class="pasos" aria-label="Pasos para recuperar la contraseña">
+          <li [class.actual]="paso() === 1" [class.hecho]="paso() > 1">1. Tu correo</li>
+          <li [class.actual]="paso() === 2" [class.hecho]="paso() > 2">2. Código</li>
+          <li [class.actual]="paso() === 3">3. Contraseña nueva</li>
+        </ol>
+
+        @if (errorGeneral(); as mensaje) {
+          <div class="alert alert-danger" role="alert"><i class="bi bi-exclamation-triangle-fill"></i> {{ mensaje }}</div>
+        }
+
+        @switch (paso()) {
+          @case (1) {
+            <form [formGroup]="formCorreo" (ngSubmit)="enviarCodigo()" novalidate>
+              <div class="mb-4">
+                <label class="form-label" for="email">Correo de tu cuenta</label>
+                <input id="email" type="email" class="form-control" formControlName="email" autocomplete="email"
+                       placeholder="nombre@correo.cl" [class.is-invalid]="errorCorreo()">
+                @if (errorCorreo(); as mensaje) {
+                  <div class="invalid-feedback">{{ mensaje }}</div>
+                } @else {
+                  <div class="form-text">Te enviaremos un código de 6 dígitos.</div>
+                }
+              </div>
+              <button type="submit" class="btn btn-primary w-100"><i class="bi bi-envelope"></i> Enviar código</button>
+            </form>
+          }
+
+          @case (2) {
+            <div class="correo-simulado mb-4" role="status">
+              <div class="small text-secondary mb-1"><i class="bi bi-envelope-open"></i> Correo simulado para <strong>{{ email }}</strong></div>
+              <div>Tu código para cambiar la contraseña es:</div>
+              <div class="codigo">{{ codigoEnviado() }}</div>
+              <div class="small text-secondary">En la versión conectada al BackEnd este código llega por correo.</div>
+            </div>
+
+            <form [formGroup]="formCodigo" (ngSubmit)="comprobarCodigo()" novalidate>
+              <div class="mb-4">
+                <label class="form-label" for="codigo">Código de 6 dígitos</label>
+                <input id="codigo" type="text" inputmode="numeric" class="form-control" formControlName="codigo"
+                       autocomplete="one-time-code" maxlength="6" placeholder="000000" [class.is-invalid]="errorCodigo()">
+                @if (errorCodigo(); as mensaje) {
+                  <div class="invalid-feedback">{{ mensaje }}</div>
+                }
+              </div>
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Comprobar código</button>
+                <button type="button" class="btn btn-link" (click)="enviarCodigo()">Enviar un código nuevo</button>
+                <button type="button" class="btn btn-link text-secondary" (click)="volverAlCorreo()">Usar otro correo</button>
+              </div>
+            </form>
+          }
+
+          @case (3) {
+            <form [formGroup]="formClave" (ngSubmit)="guardarClave()" novalidate>
+              <div class="mb-3">
+                <label class="form-label" for="password">Contraseña nueva</label>
+                <div class="input-group" [class.has-validation]="errorClave('password')">
+                  <input id="password" [type]="verClave() ? 'text' : 'password'" class="form-control" formControlName="password"
+                         autocomplete="new-password" maxlength="30" [class.is-invalid]="errorClave('password')">
+                  <button type="button" class="btn btn-outline-secondary" (click)="verClave.set(!verClave())"
+                          [attr.aria-label]="verClave() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                    <i class="bi" [class.bi-eye]="!verClave()" [class.bi-eye-slash]="verClave()"></i>
+                  </button>
+                  @if (errorClave('password'); as mensaje) {
+                    <div class="invalid-feedback">{{ mensaje }}</div>
+                  }
+                </div>
+                <app-requisitos-clave [valor]="formClave.controls.password.value" />
+              </div>
+              <div class="mb-4">
+                <label class="form-label" for="confirmar">Repite la contraseña nueva</label>
+                <input id="confirmar" [type]="verClave() ? 'text' : 'password'" class="form-control" formControlName="confirmar"
+                       autocomplete="new-password" maxlength="30" [class.is-invalid]="errorClave('confirmar')">
+                @if (errorClave('confirmar'); as mensaje) {
+                  <div class="invalid-feedback">{{ mensaje }}</div>
+                }
+              </div>
+              <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-lg"></i> Guardar contraseña nueva</button>
+            </form>
+          }
+        }
+
+        <hr class="my-4">
+        <p class="text-center small mb-0"><a routerLink="/ingresar"><i class="bi bi-arrow-left"></i> Volver a ingresar</a></p>
+      </div>
+    </div>
+  </div>
+</div>

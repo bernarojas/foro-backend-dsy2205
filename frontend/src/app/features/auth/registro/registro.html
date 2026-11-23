@@ -1,0 +1,104 @@
+<div class="container acceso">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-10 col-xl-9">
+      <div class="tarjeta acceso-tarjeta">
+        <div class="row g-0">
+          <div class="col-lg-5 d-none d-lg-block">
+            <div class="acceso-lado">
+              <div>
+                <div class="marca mb-4"><img src="logo.svg" alt="" width="38" height="38"><span>Tertulia</span></div>
+                <h2>Súmate a la conversación</h2>
+                <p style="color: rgba(255,255,255,.8)">Con tu cuenta puedes:</p>
+                <ul>
+                  <li><i class="bi bi-check-circle-fill"></i> Publicar temas en 6 categorías</li>
+                  <li><i class="bi bi-check-circle-fill"></i> Responder y debatir con otros miembros</li>
+                  <li><i class="bi bi-check-circle-fill"></i> Modificar y eliminar tus publicaciones</li>
+                  <li><i class="bi bi-check-circle-fill"></i> Personalizar tu perfil</li>
+                </ul>
+              </div>
+              <p class="small mb-0" style="color: rgba(255,255,255,.65)">Es gratis y toma menos de un minuto.</p>
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-7">
+            <div class="acceso-formulario">
+              <h1 class="h3 mb-1">Crear cuenta</h1>
+              <p class="text-secondary mb-4">¿Ya tienes una? <a routerLink="/ingresar">Ingresa aquí</a>.</p>
+
+              @if (errorGeneral(); as mensaje) {
+                <div class="alert alert-danger" role="alert"><i class="bi bi-exclamation-triangle-fill"></i> {{ mensaje }}</div>
+              }
+
+              <form [formGroup]="form" (ngSubmit)="registrar()" novalidate>
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label" for="nombre">Nombre y apellido <span class="text-danger">*</span></label>
+                    <input id="nombre" type="text" class="form-control" formControlName="nombre" autocomplete="name"
+                           maxlength="100" placeholder="Como quieres que te vean en el foro" [class.is-invalid]="error('nombre')">
+                    @if (error('nombre'); as mensaje) {
+                      <div class="invalid-feedback">{{ mensaje }}</div>
+                    }
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label" for="email">Correo <span class="text-danger">*</span></label>
+                    <input id="email" type="email" class="form-control" formControlName="email" autocomplete="email"
+                           maxlength="120" placeholder="nombre@correo.cl" [class.is-invalid]="error('email')">
+                    @if (error('email'); as mensaje) {
+                      <div class="invalid-feedback">{{ mensaje }}</div>
+                    }
+                  </div>
+
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="password">Contraseña <span class="text-danger">*</span></label>
+                    <div class="input-group" [class.has-validation]="error('password')">
+                      <input id="password" [type]="verClave() ? 'text' : 'password'" class="form-control" formControlName="password"
+                             autocomplete="new-password" maxlength="30" aria-describedby="requisitosClave" [class.is-invalid]="error('password')">
+                      <button type="button" class="btn btn-outline-secondary" (click)="verClave.set(!verClave())"
+                              [attr.aria-label]="verClave() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                        <i class="bi" [class.bi-eye]="!verClave()" [class.bi-eye-slash]="verClave()"></i>
+                      </button>
+                      @if (error('password'); as mensaje) {
+                        <div class="invalid-feedback">{{ mensaje }}</div>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="confirmar">Repite la contraseña <span class="text-danger">*</span></label>
+                    <input id="confirmar" [type]="verClave() ? 'text' : 'password'" class="form-control" formControlName="confirmar"
+                           autocomplete="new-password" maxlength="30" [class.is-invalid]="error('confirmar')">
+                    @if (error('confirmar'); as mensaje) {
+                      <div class="invalid-feedback">{{ mensaje }}</div>
+                    }
+                  </div>
+
+                  <div class="col-12" id="requisitosClave">
+                    <app-requisitos-clave [valor]="form.controls.password.value" />
+                  </div>
+
+                  <div class="col-12">
+                    <div class="form-check">
+                      <input id="aceptaNormas" type="checkbox" class="form-check-input" formControlName="aceptaNormas"
+                             [class.is-invalid]="error('aceptaNormas')">
+                      <label class="form-check-label" for="aceptaNormas">
+                        Leí y acepto las <a routerLink="/normas" target="_blank">normas del foro</a> <span class="text-danger">*</span>
+                      </label>
+                      @if (error('aceptaNormas'); as mensaje) {
+                        <div class="invalid-feedback">{{ mensaje }}</div>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <button type="submit" class="btn btn-acento w-100 btn-lg"><i class="bi bi-person-plus"></i> Crear mi cuenta</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

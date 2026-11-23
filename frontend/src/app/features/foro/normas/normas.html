@@ -1,0 +1,55 @@
+<div class="container pagina">
+  <nav aria-label="Ruta de navegación">
+    <ol class="breadcrumb migas">
+      <li class="breadcrumb-item"><a routerLink="/">Inicio</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Normas del foro</li>
+    </ol>
+  </nav>
+
+  <div class="row g-4">
+    <div class="col-12 col-lg-8">
+      <h1 class="h3">Normas del foro</h1>
+      <p class="text-secondary mb-4">
+        Tertulia es un espacio para conversar con calma. Estas normas valen para todos los temas y comentarios.
+      </p>
+
+      <div class="tarjeta tarjeta-cuerpo">
+        @for (norma of normas; track norma.titulo; let i = $index) {
+          <div class="norma">
+            <span class="norma-numero">{{ i + 1 }}</span>
+            <div>
+              <h2 class="h6 mb-1">{{ norma.titulo }}</h2>
+              <p class="mb-0 text-secondary">{{ norma.texto }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <aside class="col-12 col-lg-4">
+      <div class="lateral-fijo d-grid gap-4">
+        <section class="tarjeta tarjeta-cuerpo">
+          <h2 class="titulo-seccion"><i class="bi bi-shield-check"></i> ¿Qué pasa si no se cumplen?</h2>
+          <ol class="ps-3 mb-0 d-grid gap-2">
+            <li>Un moderador <strong>banea</strong> el tema o el comentario y deja escrito el motivo.</li>
+            <li>La publicación deja de verse en el foro. Su autor puede ver el motivo.</li>
+            <li>Si fue un error, el equipo de moderación la <strong>restaura</strong>.</li>
+            <li>Ante faltas repetidas, un administrador puede <strong>bloquear la cuenta</strong>.</li>
+          </ol>
+        </section>
+
+        <section class="tarjeta tarjeta-cuerpo">
+          <h2 class="titulo-seccion"><i class="bi bi-people-fill"></i> Quién es quién</h2>
+          <dl class="mb-0">
+            <dt>Usuario</dt>
+            <dd class="text-secondary">Publica temas y comenta. Modifica y elimina solo lo suyo.</dd>
+            <dt>Moderador</dt>
+            <dd class="text-secondary">Banea, restaura y elimina publicaciones que incumplen las normas.</dd>
+            <dt>Administrador</dt>
+            <dd class="text-secondary mb-0">Además administra las cuentas, los roles y las categorías.</dd>
+          </dl>
+        </section>
+      </div>
+    </aside>
+  </div>
+</div>
