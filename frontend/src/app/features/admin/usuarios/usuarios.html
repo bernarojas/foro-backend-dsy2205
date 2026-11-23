@@ -1,0 +1,191 @@
+<div class="container pagina">
+  <nav aria-label="Ruta de navegación">
+    <ol class="breadcrumb migas">
+      <li class="breadcrumb-item"><a routerLink="/">Inicio</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Usuarios</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
+    <h1 class="h3 mb-0"><i class="bi bi-people"></i> Usuarios</h1>
+    @if (!creando()) {
+      <button type="button" class="btn btn-acento" (click)="abrirFormulario()"><i class="bi bi-person-plus"></i> Nuevo usuario</button>
+    }
+  </div>
+  <p class="text-secondary mb-4">Crea cuentas, cambia roles, bloquea a quienes incumplen las normas o elimina cuentas.</p>
+
+  <!-- Resumen por rol: 1 columna en celular, 3 desde tablet -->
+  <div class="row g-3 mb-4">
+    @for (fila of usuarios.resumenPorRol(); track fila.rol.id) {
+      <div class="col-12 col-md-4">
+        <div class="tarjeta dato-resumen">
+          <div class="d-flex justify-content-between align-items-start gap-2">
+            <div><strong>{{ fila.total }}</strong><span>{{ fila.activos }} activos · {{ fila.bloqueados }} bloqueados</span></div>
+            <app-rol [rol]="fila.rol.nombre" />
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Nuevo usuario -->
+  @if (creando()) {
+    <section class="tarjeta tarjeta-cuerpo mb-4" aria-labelledby="tituloNuevo">
+      <h2 class="titulo-seccion" id="tituloNuevo"><i class="bi bi-person-plus-fill"></i> Nuevo usuario</h2>
+
+      @if (errorCrear(); as mensaje) {
+        <div class="alert alert-danger" role="alert"><i class="bi bi-exclamation-triangle-fill"></i> {{ mensaje }}</div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="crear()" novalidate>
+        <div class="row g-3">
+          <div class="col-12 col-md-6 col-lg-4">
+            <label class="form-label" for="nombre">Nombre y apellido <span class="text-danger">*</span></label>
+            <input id="nombre" type="text" class="form-control" formControlName="nombre" maxlength="100" [class.is-invalid]="error('nombre')">
+            @if (error('nombre'); as mensaje) {
+              <div class="invalid-feedback">{{ mensaje }}</div>
+            }
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <label class="form-label" for="email">Correo <span class="text-danger">*</span></label>
+            <input id="email" type="email" class="form-control" formControlName="email" maxlength="120" autocomplete="off" [class.is-invalid]="error('email')">
+            @if (error('email'); as mensaje) {
+              <div class="invalid-feedback">{{ mensaje }}</div>
+            }
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <label class="form-label" for="rolId">Rol <span class="text-danger">*</span></label>
+            <select id="rolId" class="form-select" formControlName="rolId" [class.is-invalid]="error('rolId')">
+              <option [ngValue]="0" disabled>Elige un rol…</option>
+              @for (rol of usuarios.listaRoles(); track rol.id) {
+                <option [ngValue]="rol.id">{{ rol.nombre }}</option>
+              }
+            </select>
+            @if (error('rolId'); as mensaje) {
+              <div class="invalid-feedback">{{ mensaje }}</div>
+            }
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <label class="form-label" for="password">Contraseña inicial <span class="text-danger">*</span></label>
+            <input id="password" type="text" class="form-control" formControlName="password" maxlength="30" autocomplete="off" [class.is-invalid]="error('password')">
+            @if (error('password'); as mensaje) {
+              <div class="invalid-feedback">{{ mensaje }}</div>
+            }
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <label class="form-label" for="confirmar">Repite la contraseña <span class="text-danger">*</span></label>
+            <input id="confirmar" type="text" class="form-control" formControlName="confirmar" maxlength="30" autocomplete="off" [class.is-invalid]="error('confirmar')">
+            @if (error('confirmar'); as mensaje) {
+              <div class="invalid-feedback">{{ mensaje }}</div>
+            }
+          </div>
+          <div class="col-12 col-lg-8">
+            <app-requisitos-clave [valor]="form.controls.password.value" />
+          </div>
+          <div class="col-12 d-flex flex-column flex-sm-row gap-2">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Crear usuario</button>
+            <button type="button" class="btn btn-outline-secondary" (click)="creando.set(false)">Cancelar</button>
+          </div>
+        </div>
+      </form>
+    </section>
+  }
+
+  <!-- Lista -->
+  <div class="tarjeta">
+    <div class="tarjeta-cuerpo border-bottom">
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="filtroTexto">Buscar</label>
+          <input id="filtroTexto" type="search" class="form-control" maxlength="80" placeholder="Nombre o correo"
+                 [value]="texto()" (input)="texto.set(valor($event))">
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label" for="filtroRol">Rol</label>
+          <select id="filtroRol" class="form-select" (change)="rolId.set(+valor($event))">
+            <option value="0">Todos</option>
+            @for (rol of usuarios.listaRoles(); track rol.id) {
+              <option [value]="rol.id">{{ rol.nombre }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label" for="filtroEstado">Estado</label>
+          <select id="filtroEstado" class="form-select" (change)="estado.set($any(valor($event)))">
+            <option value="">Todos</option>
+            <option value="ACTIVO">Activos</option>
+            <option value="BLOQUEADO">Bloqueados</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table tabla tabla-apilable">
+        <thead>
+          <tr>
+            <th scope="col">Usuario</th>
+            <th scope="col">Rol</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Publicaciones</th>
+            <th scope="col">Registro</th>
+            <th scope="col" class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (usuario of lista(); track usuario.id) {
+            <tr>
+              <td class="principal">
+                <div class="d-flex align-items-center gap-2">
+                  <app-avatar [nombre]="usuario.nombre" [color]="usuario.color" />
+                  <div style="min-width: 0">
+                    <div class="fw-semibold text-break">
+                      {{ usuario.nombre }}
+                      @if (usuario.id === auth.usuario()?.id) {
+                        <span class="badge text-bg-light border">Tú</span>
+                      }
+                    </div>
+                    <div class="small text-secondary text-break">{{ usuario.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td data-titulo="Rol">
+                <label class="visually-hidden" [for]="'rol-' + usuario.id">Rol de {{ usuario.nombre }}</label>
+                <select [id]="'rol-' + usuario.id" class="form-select form-select-sm" style="min-width: 9.5rem" (change)="cambiarRol(usuario, $event)">
+                  @for (rol of usuarios.listaRoles(); track rol.id) {
+                    <option [value]="rol.id" [selected]="rol.id === usuario.rolId">{{ rol.nombre }}</option>
+                  }
+                </select>
+              </td>
+              <td data-titulo="Estado">
+                <span class="badge" [class.estado-activo]="usuario.estado === 'ACTIVO'" [class.estado-bloqueado]="usuario.estado === 'BLOQUEADO'">
+                  {{ usuario.estado === 'ACTIVO' ? 'Activo' : 'Bloqueado' }}
+                </span>
+              </td>
+              <td data-titulo="Publicaciones" class="text-nowrap small">{{ usuario.temas }} temas · {{ usuario.comentarios }} com.</td>
+              <td data-titulo="Registro" class="text-nowrap small">{{ usuario.fechaRegistro | date: 'dd/MM/y' }}</td>
+              <td data-titulo="Acciones" class="text-end text-nowrap">
+                <button type="button" class="btn btn-sm btn-icono" [class.btn-outline-warning]="usuario.estado === 'ACTIVO'"
+                        [class.btn-outline-success]="usuario.estado === 'BLOQUEADO'" (click)="cambiarEstado(usuario)"
+                        [title]="usuario.estado === 'ACTIVO' ? 'Bloquear' : 'Desbloquear'"
+                        [attr.aria-label]="(usuario.estado === 'ACTIVO' ? 'Bloquear a ' : 'Desbloquear a ') + usuario.nombre">
+                  <i class="bi" [class.bi-lock]="usuario.estado === 'ACTIVO'" [class.bi-unlock]="usuario.estado === 'BLOQUEADO'"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-icono btn-outline-danger ms-1" (click)="eliminar(usuario)"
+                        title="Eliminar" [attr.aria-label]="'Eliminar a ' + usuario.nombre">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="principal">
+                <div class="vacio py-4"><img src="imagenes/vacio.svg" alt=""><p class="mb-0">No hay usuarios con esos filtros.</p></div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
