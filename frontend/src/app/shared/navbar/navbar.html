@@ -1,0 +1,98 @@
+<header class="barra sticky-top">
+  <nav class="navbar navbar-expand-lg navbar-dark" aria-label="Navegación principal">
+    <div class="container">
+      <a class="navbar-brand marca" routerLink="/" aria-label="Tertulia, ir al inicio">
+        <img src="logo.svg" alt="" width="34" height="34">
+        <span>Tertulia</span>
+      </a>
+
+      <button class="navbar-toggler" type="button" aria-controls="menuPrincipal" [attr.aria-expanded]="abierto()"
+              aria-label="Abrir o cerrar el menú" (click)="alternar()">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="menuPrincipal" [class.show]="abierto()">
+        <ul class="navbar-nav me-lg-3 mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Categorías</a>
+            <ul class="dropdown-menu">
+              @for (categoria of foro.categorias(); track categoria.id) {
+                <li>
+                  <a class="dropdown-item d-flex align-items-center gap-2" [routerLink]="['/categorias', categoria.id]">
+                    <i class="bi" [class]="categoria.icono" [style.color]="categoria.color"></i>
+                    <span class="flex-grow-1">{{ categoria.nombre }}</span>
+                    <span class="badge text-bg-light">{{ categoria.temas }}</span>
+                  </a>
+                </li>
+              }
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/normas" routerLinkActive="active">Normas</a>
+          </li>
+        </ul>
+
+        <form class="buscador flex-grow-1 me-lg-3 mb-3 mb-lg-0" role="search" (submit)="buscar($event, campoBuscar)">
+          <label class="visually-hidden" for="buscarNav">Buscar temas</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input #campoBuscar id="buscarNav" type="search" class="form-control" placeholder="Buscar temas…" maxlength="80">
+          </div>
+        </form>
+
+        @if (auth.usuario(); as usuario) {
+          <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2">
+            <a class="btn btn-acento" routerLink="/temas/nuevo"><i class="bi bi-plus-lg"></i> Nuevo tema</a>
+            <div class="dropdown">
+              <button class="btn cuenta dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <app-avatar [nombre]="usuario.nombre" [color]="usuario.color" />
+                <span class="text-truncate">{{ usuario.nombre }}</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li class="px-3 py-2">
+                  <div class="fw-semibold text-truncate">{{ usuario.nombre }}</div>
+                  <div class="small text-secondary text-truncate mb-1">{{ usuario.email }}</div>
+                  @if (auth.rol(); as rol) {
+                    <app-rol [rol]="rol" />
+                  }
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" routerLink="/perfil"><i class="bi bi-person-gear"></i> Mi perfil</a></li>
+                <li><a class="dropdown-item" routerLink="/mis-publicaciones"><i class="bi bi-journal-text"></i> Mis publicaciones</a></li>
+                @if (auth.puedeModerar()) {
+                  <li><hr class="dropdown-divider"></li>
+                  <li><h6 class="dropdown-header">Moderación</h6></li>
+                  <li><a class="dropdown-item" routerLink="/moderacion"><i class="bi bi-shield-check"></i> Panel de moderación</a></li>
+                }
+                @if (auth.esAdministrador()) {
+                  <li><h6 class="dropdown-header">Administración</h6></li>
+                  <li><a class="dropdown-item" routerLink="/admin/usuarios"><i class="bi bi-people"></i> Usuarios</a></li>
+                  <li><a class="dropdown-item" routerLink="/admin/categorias"><i class="bi bi-grid"></i> Categorías</a></li>
+                  <li>
+                    <button type="button" class="dropdown-item" (click)="restablecerDatos()">
+                      <i class="bi bi-arrow-repeat"></i> Restablecer datos de ejemplo
+                    </button>
+                  </li>
+                }
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <button type="button" class="dropdown-item text-danger" (click)="cerrarSesion()">
+                    <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        } @else {
+          <div class="d-flex flex-column flex-lg-row gap-2">
+            <a class="btn btn-outline-light" routerLink="/ingresar">Ingresar</a>
+            <a class="btn btn-acento" routerLink="/registro">Crear cuenta</a>
+          </div>
+        }
+      </div>
+    </div>
+  </nav>
+</header>
