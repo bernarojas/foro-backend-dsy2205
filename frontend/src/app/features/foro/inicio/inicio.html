@@ -1,0 +1,105 @@
+<section class="portada">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-12 col-lg-7">
+        <h1>Conversaciones que <em>valen la pena</em>.</h1>
+        <p class="lead mt-3 mb-4">
+          Tertulia es un foro para preguntar, compartir lo que sabes y encontrar gente con tus mismos intereses.
+        </p>
+
+        <form class="portada-buscador" role="search" (submit)="buscar($event, campo)">
+          <label class="visually-hidden" for="buscarPortada">Buscar en el foro</label>
+          <div class="input-group input-group-lg">
+            <input #campo id="buscarPortada" type="search" class="form-control" maxlength="80"
+                   placeholder="¿Qué quieres saber? Ej.: Spring Boot, guitarra, running…">
+            <button class="btn btn-acento" type="submit"><i class="bi bi-search"></i><span class="d-none d-sm-inline"> Buscar</span></button>
+          </div>
+        </form>
+
+        <div class="cifras">
+          <div class="cifra"><strong>{{ foro.totales().temas }}</strong><span>temas publicados</span></div>
+          <div class="cifra"><strong>{{ foro.totales().comentarios }}</strong><span>respuestas</span></div>
+          <div class="cifra"><strong>{{ foro.totales().miembros }}</strong><span>miembros activos</span></div>
+          <div class="cifra"><strong>{{ foro.totales().categorias }}</strong><span>categorías</span></div>
+        </div>
+      </div>
+      <div class="col-lg-5 d-none d-lg-block">
+        <img class="img-fluid" src="imagenes/conversacion.svg" alt="Ilustración de personas conversando con globos de texto" width="520" height="400">
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container pagina">
+  <!-- Categorías: 1 columna en celular, 2 en tablet, 3 en escritorio -->
+  <section aria-labelledby="tituloCategorias" class="mb-5">
+    <h2 class="titulo-seccion" id="tituloCategorias"><i class="bi bi-grid-fill"></i> Categorías</h2>
+    <div class="row g-3">
+      @for (categoria of foro.categorias(); track categoria.id) {
+        <div class="col-12 col-md-6 col-lg-4">
+          <a class="tarjeta categoria-tarjeta" [routerLink]="['/categorias', categoria.id]">
+            <div class="d-flex align-items-center gap-3">
+              <span class="icono-categoria" [style.background-color]="categoria.color"><i class="bi" [class]="categoria.icono"></i></span>
+              <h3>{{ categoria.nombre }}</h3>
+            </div>
+            <p>{{ categoria.descripcion }}</p>
+            <div class="categoria-datos">
+              <span><i class="bi bi-chat-left-text"></i> {{ categoria.temas }} {{ categoria.temas === 1 ? 'tema' : 'temas' }}</span>
+              <span><i class="bi bi-reply"></i> {{ categoria.comentarios }} {{ categoria.comentarios === 1 ? 'respuesta' : 'respuestas' }}</span>
+              @if (categoria.ultimaPublicacion) {
+                <span><i class="bi bi-clock"></i> {{ categoria.ultimaPublicacion | haceCuanto }}</span>
+              }
+            </div>
+          </a>
+        </div>
+      }
+    </div>
+  </section>
+
+  <div class="row g-4">
+    <section class="col-12 col-lg-8" aria-labelledby="tituloRecientes">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <h2 class="titulo-seccion mb-0" id="tituloRecientes"><i class="bi bi-lightning-charge-fill"></i> Conversaciones con actividad reciente</h2>
+        <a class="btn btn-sm btn-outline-primary" routerLink="/buscar">Ver todos los temas</a>
+      </div>
+      <div class="tarjeta">
+        <app-lista-temas [temas]="recientes()" />
+      </div>
+    </section>
+
+    <aside class="col-12 col-lg-4">
+      <div class="lateral-fijo d-grid gap-4">
+        <section class="tarjeta tarjeta-cuerpo" aria-labelledby="tituloComentados">
+          <h2 class="titulo-seccion" id="tituloComentados"><i class="bi bi-fire"></i> Los más comentados</h2>
+          <ol class="lista-compacta">
+            @for (tema of masComentados(); track tema.id) {
+              <li>
+                <div>
+                  <a [routerLink]="['/temas', tema.id]">{{ tema.titulo }}</a>
+                  <div class="small text-secondary">{{ tema.comentarios }} respuestas · {{ tema.categoria?.nombre }}</div>
+                </div>
+              </li>
+            }
+          </ol>
+        </section>
+
+        <section class="tarjeta tarjeta-cuerpo">
+          @if (auth.usuario(); as usuario) {
+            <h2 class="titulo-seccion"><i class="bi bi-pencil-square"></i> ¿Tienes algo que contar?</h2>
+            <p class="text-secondary">Hola, {{ usuario.nombre }}. Abre un tema nuevo y empieza la conversación.</p>
+            <a class="btn btn-acento w-100" routerLink="/temas/nuevo"><i class="bi bi-plus-lg"></i> Publicar un tema</a>
+          } @else {
+            <h2 class="titulo-seccion"><i class="bi bi-person-plus-fill"></i> Súmate a la conversación</h2>
+            <p class="text-secondary">Leer es libre. Para publicar temas y comentar necesitas una cuenta: es gratis y toma un minuto.</p>
+            <div class="d-grid gap-2">
+              <a class="btn btn-acento" routerLink="/registro">Crear mi cuenta</a>
+              <a class="btn btn-outline-primary" routerLink="/ingresar">Ya tengo cuenta</a>
+            </div>
+          }
+          <hr>
+          <a class="small" routerLink="/normas"><i class="bi bi-shield-check"></i> Lee las normas del foro antes de publicar</a>
+        </section>
+      </div>
+    </aside>
+  </div>
+</div>

@@ -1,0 +1,65 @@
+<div class="container pagina">
+  @if (categoria(); as categoria) {
+    <nav aria-label="Ruta de navegación">
+      <ol class="breadcrumb migas">
+        <li class="breadcrumb-item"><a routerLink="/">Inicio</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ categoria.nombre }}</li>
+      </ol>
+    </nav>
+
+    <header class="tarjeta tarjeta-cuerpo mb-4">
+      <div class="row align-items-center g-3">
+        <div class="col-12 col-md">
+          <div class="d-flex align-items-center gap-3">
+            <span class="icono-categoria grande" [style.background-color]="categoria.color"><i class="bi" [class]="categoria.icono"></i></span>
+            <div>
+              <h1 class="h3 mb-1">{{ categoria.nombre }}</h1>
+              <p class="text-secondary mb-0">{{ categoria.descripcion }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-auto">
+          <a class="btn btn-acento w-100" routerLink="/temas/nuevo" [queryParams]="{ categoria: categoria.id }">
+            <i class="bi bi-plus-lg"></i> Nuevo tema aquí
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+      <p class="mb-0 text-secondary">
+        <strong class="text-body">{{ categoria.temas }}</strong> {{ categoria.temas === 1 ? 'tema' : 'temas' }} ·
+        <strong class="text-body">{{ categoria.comentarios }}</strong> {{ categoria.comentarios === 1 ? 'respuesta' : 'respuestas' }}
+      </p>
+      <div class="d-flex align-items-center gap-2">
+        <label class="small text-secondary text-nowrap" for="ordenCategoria">Ordenar por</label>
+        <select id="ordenCategoria" class="form-select form-select-sm" [value]="orden()" (change)="cambiarOrden($event)">
+          <option value="actividad">Actividad reciente</option>
+          <option value="recientes">Más nuevos</option>
+          <option value="comentados">Más comentados</option>
+          <option value="antiguos">Más antiguos</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="tarjeta">
+      @if (temas().length > 0) {
+        <app-lista-temas [temas]="temas()" [mostrarCategoria]="false" />
+      } @else {
+        <div class="vacio">
+          <img src="imagenes/vacio.svg" alt="">
+          <h2 class="h5">Todavía no hay temas en esta categoría</h2>
+          <p class="mb-3">Sé la primera persona en abrir una conversación.</p>
+          <a class="btn btn-primary" routerLink="/temas/nuevo" [queryParams]="{ categoria: categoria.id }">Publicar el primer tema</a>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="tarjeta vacio">
+      <img src="imagenes/vacio.svg" alt="">
+      <h1 class="h4">Esa categoría no existe</h1>
+      <p class="mb-3">Puede que la hayan eliminado o que el enlace esté mal escrito.</p>
+      <a class="btn btn-primary" routerLink="/">Volver al inicio</a>
+    </div>
+  }
+</div>
