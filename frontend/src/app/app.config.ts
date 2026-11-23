@@ -1,4 +1,5 @@
 import { registerLocaleData } from '@angular/common';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 import localeEsCl from '@angular/common/locales/es-CL';
 import { ApplicationConfig, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
@@ -16,6 +17,8 @@ export const appConfig: ApplicationConfig = {
       withComponentInputBinding(),
       withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' }),
     ),
+    // Solo lo usa la pantalla "Conexión con el BackEnd"; el resto de la aplicación trabaja con arreglos.
+    provideHttpClient(withFetch()),
     { provide: LOCALE_ID, useValue: 'es-CL' },
   ],
 };

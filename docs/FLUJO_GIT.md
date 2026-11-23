@@ -19,14 +19,15 @@ Semana 2 (BackEnd, etiqueta `v1.0-semana2`):
 | `feature/ms-foro` | Microservicio del foro |
 | `feature/postman-docs` | Colección de Postman, README y guion del video |
 
-Semana 5 (FrontEnd, arquetipo, moderación y nube, etiqueta `v2.0-semana5`):
+Semana 5 (FrontEnd, arquetipo, moderación y Docker, etiquetas `v2.0-semana5` y `v2.1-semana5`):
 
 | Rama | Para qué |
 |---|---|
 | `feature/arquetipo` | Arquetipo Maven de los microservicios |
 | `feature/ms-moderacion` | Microservicio de moderación generado con el arquetipo, su tabla y sus pruebas de Postman |
 | `feature/frontend-angular` | Aplicación Angular: pantallas, validaciones, roles y datos en arreglos |
-| `feature/docker-nube` | Docker del FrontEnd, compose de la nube con Oracle Cloud y documentación |
+| `feature/docker-nube` | Docker del FrontEnd, compose con Oracle Cloud y documentación |
+| `feature/conexion-backend` | Pantalla "Conexión con el BackEnd" (FrontEnd → microservicios → Oracle por la red de Docker) y ajuste a Docker Desktop local con Oracle Cloud |
 
 Cada rama `feature/*` sale de `develop` y vuelve a ella con un *merge* (o un Pull Request en GitHub).
 Al terminar, `develop` se une a `main` y se etiqueta la entrega.
@@ -40,7 +41,7 @@ feat(frontend): panel de moderación con baneo, restauración e historial
 feat(ms-moderacion): estrategias de moderación para temas y comentarios
 fix(ms-usuarios): un usuario bloqueado ya no puede usar su token
 docs: guion del video de presentación
-chore: Docker Compose de la nube con Oracle Cloud
+chore: Docker Compose con Oracle Cloud
 ```
 
 ## Herramientas colaborativas
@@ -57,7 +58,7 @@ Repositorio: https://github.com/bernarojas/foro-backend-dsy2205
 
 ```bash
 git push origin main develop
-git push origin feature/arquetipo feature/ms-moderacion feature/frontend-angular feature/docker-nube
+git push origin feature/arquetipo feature/ms-moderacion feature/frontend-angular feature/docker-nube feature/conexion-backend
 git push origin --tags
 ```
 
