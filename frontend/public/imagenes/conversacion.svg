@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 400" role="img" aria-label="Personas conversando en el foro">
+  <!-- Ilustración de la portada: una mesa de conversación con globos de texto -->
+  <defs>
+    <linearGradient id="luz" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b4170"/>
+      <stop offset="1" stop-color="#1b2b4f"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="260" cy="205" r="178" fill="url(#luz)"/>
+  <circle cx="92" cy="74" r="7" fill="#fca311" opacity=".75"/>
+  <circle cx="446" cy="96" r="5" fill="#ffffff" opacity=".55"/>
+  <circle cx="470" cy="300" r="9" fill="#fca311" opacity=".45"/>
+  <circle cx="58" cy="290" r="5" fill="#ffffff" opacity=".4"/>
+
+  <!-- Globo grande: un tema -->
+  <g>
+    <path d="M96 86h196a18 18 0 0 1 18 18v74a18 18 0 0 1-18 18H170l-34 30v-30H96a18 18 0 0 1-18-18v-74a18 18 0 0 1 18-18z" fill="#ffffff"/>
+    <rect x="104" y="112" width="120" height="12" rx="6" fill="#14213d"/>
+    <rect x="104" y="136" width="176" height="9" rx="4.5" fill="#c9cfdb"/>
+    <rect x="104" y="154" width="148" height="9" rx="4.5" fill="#c9cfdb"/>
+    <circle cx="282" cy="118" r="11" fill="#fca311"/>
+    <path d="M277 118l4 4 7-8" fill="none" stroke="#14213d" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Globo de respuesta -->
+  <g>
+    <path d="M266 190h164a16 16 0 0 1 16 16v54a16 16 0 0 1-16 16h-22v26l-30-26H266a16 16 0 0 1-16-16v-54a16 16 0 0 1 16-16z" fill="#fca311"/>
+    <rect x="274" y="212" width="132" height="9" rx="4.5" fill="#14213d" opacity=".85"/>
+    <rect x="274" y="230" width="104" height="9" rx="4.5" fill="#14213d" opacity=".55"/>
+    <rect x="274" y="248" width="70" height="9" rx="4.5" fill="#14213d" opacity=".55"/>
+  </g>
+
+  <!-- Globo chico: escribiendo -->
+  <g>
+    <path d="M118 250h92a14 14 0 0 1 14 14v30a14 14 0 0 1-14 14h-54l-22 20v-20h-16a14 14 0 0 1-14-14v-30a14 14 0 0 1 14-14z" fill="#e9edf5"/>
+    <circle cx="140" cy="279" r="6" fill="#14213d"/>
+    <circle cx="164" cy="279" r="6" fill="#14213d" opacity=".65"/>
+    <circle cx="188" cy="279" r="6" fill="#14213d" opacity=".35"/>
+  </g>
+
+  <!-- Personas -->
+  <g>
+    <circle cx="398" cy="118" r="24" fill="#ffd9a0"/>
+    <path d="M374 112c2-20 46-22 48 2-10-9-34-11-48-2z" fill="#14213d"/>
+    <path d="M360 176c0-22 16-34 38-34s38 12 38 34z" fill="#0f766e"/>
+  </g>
+  <g>
+    <circle cx="74" cy="214" r="20" fill="#f3c9a5"/>
+    <path d="M54 212c0-26 40-26 40 0-8-10-32-10-40 0z" fill="#7c3aed"/>
+    <path d="M42 264c0-20 14-30 32-30s32 10 32 30z" fill="#be123c"/>
+  </g>
+  <g>
+    <circle cx="330" cy="318" r="19" fill="#e8b78e"/>
+    <path d="M311 314c2-18 36-18 38 0-10-6-28-6-38 0z" fill="#3b2a20"/>
+    <path d="M300 366c0-19 13-28 30-28s30 9 30 28z" fill="#1d4ed8"/>
+  </g>
+</svg>
