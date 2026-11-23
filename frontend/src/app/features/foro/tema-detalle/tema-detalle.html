@@ -1,0 +1,234 @@
+<div class="container pagina">
+  @if (tema(); as tema) {
+    <nav aria-label="Ruta de navegación">
+      <ol class="breadcrumb migas">
+        <li class="breadcrumb-item"><a routerLink="/">Inicio</a></li>
+        @if (tema.categoria; as categoria) {
+          <li class="breadcrumb-item"><a [routerLink]="['/categorias', categoria.id]">{{ categoria.nombre }}</a></li>
+        }
+        <li class="breadcrumb-item active text-truncate" style="max-width: 16rem" aria-current="page">{{ tema.titulo }}</li>
+      </ol>
+    </nav>
+
+    <div class="row g-4">
+      <div class="col-12 col-lg-8">
+        <!-- Tema -->
+        <article class="tarjeta tarjeta-cuerpo mb-4">
+          @if (tema.estado === 'BANEADO') {
+            <div class="aviso-moderacion mb-3" role="alert">
+              <strong><i class="bi bi-slash-circle"></i> Este tema está baneado.</strong>
+              No se ve en el foro: solo lo ven su autor y el equipo de moderación.
+              @if (motivoBaneo(); as motivo) {
+                <div class="mt-1"><strong>Motivo:</strong> {{ motivo }}</div>
+              }
+            </div>
+          }
+
+          <header class="tema-cabecera">
+            @if (tema.categoria; as categoria) {
+              <a class="etiqueta-categoria mb-2" [style.color]="categoria.color" [routerLink]="['/categorias', categoria.id]">
+                <i class="bi" [class]="categoria.icono"></i> {{ categoria.nombre }}
+              </a>
+            }
+            <h1>{{ tema.titulo }}</h1>
+            <div class="d-flex align-items-center gap-2 mt-3">
+              <app-avatar [nombre]="tema.autorNombre" [color]="tema.autorColor" />
+              <div class="small">
+                <div class="fw-semibold">{{ tema.autorNombre }}</div>
+                <div class="text-secondary">
+                  {{ tema.fechaCreacion | date: "d 'de' MMMM 'de' y, HH:mm" }}
+                  @if (tema.fechaActualizacion) {
+                    · <span [attr.title]="tema.fechaActualizacion | date: 'short'">modificado {{ tema.fechaActualizacion | haceCuanto }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <hr>
+          <p class="texto-publicacion mb-0">{{ tema.contenido }}</p>
+
+          @if (foro.puedeModificar(tema) || foro.puedeEliminar(tema) || auth.puedeModerar()) {
+            <hr>
+            <div class="d-flex flex-wrap gap-2">
+              @if (foro.puedeModificar(tema)) {
+                <a class="btn btn-sm btn-outline-primary" [routerLink]="['/temas', tema.id, 'editar']"><i class="bi bi-pencil"></i> Modificar</a>
+              }
+              @if (foro.puedeEliminar(tema)) {
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="eliminarTema()"><i class="bi bi-trash"></i> Eliminar</button>
+              }
+              @if (auth.puedeModerar()) {
+                @if (tema.estado === 'PUBLICADO') {
+                  <button type="button" class="btn btn-sm btn-danger ms-sm-auto" (click)="banearTema()"><i class="bi bi-slash-circle"></i> Banear tema</button>
+                } @else {
+                  <button type="button" class="btn btn-sm btn-success ms-sm-auto" (click)="restaurarTema()"><i class="bi bi-arrow-counterclockwise"></i> Restaurar tema</button>
+                }
+              }
+            </div>
+          }
+        </article>
+
+        <!-- Comentarios -->
+        <section aria-labelledby="tituloComentarios">
+          <h2 class="titulo-seccion" id="tituloComentarios">
+            <i class="bi bi-chat-dots-fill"></i> {{ publicados() }} {{ publicados() === 1 ? 'respuesta' : 'respuestas' }}
+          </h2>
+
+          @if (comentarios().length > 0) {
+            <div class="tarjeta mb-4">
+              @for (comentario of comentarios(); track comentario.id) {
+                <div class="comentario" [class.retirado]="comentario.estado === 'BANEADO'" [id]="'comentario-' + comentario.id">
+                  <app-avatar [nombre]="comentario.autorNombre" [color]="comentario.autorColor" />
+                  <div class="comentario-cuerpo">
+                    <div class="d-flex flex-wrap align-items-baseline gap-2 mb-1">
+                      <strong>{{ comentario.autorNombre }}</strong>
+                      @if (comentario.autorId === tema.autorId) {
+                        <span class="badge text-bg-light border">Autor del tema</span>
+                      }
+                      <span class="small text-secondary" [attr.title]="comentario.fechaCreacion | date: 'short'">{{ comentario.fechaCreacion | haceCuanto }}</span>
+                      @if (comentario.estado === 'BANEADO') {
+                        <span class="badge estado-baneado"><i class="bi bi-slash-circle"></i> Baneado</span>
+                      }
+                    </div>
+
+                    @if (editando() === comentario.id) {
+                      <form (submit)="$event.preventDefault(); guardarEdicion()" novalidate>
+                        <label class="visually-hidden" [for]="'editar-' + comentario.id">Modificar comentario</label>
+                        <textarea [id]="'editar-' + comentario.id" class="form-control" rows="3" [formControl]="edicion"
+                                  [class.is-invalid]="error(edicion)"></textarea>
+                        @if (error(edicion); as mensaje) {
+                          <div class="invalid-feedback">{{ mensaje }}</div>
+                        }
+                        <div class="d-flex gap-2 mt-2">
+                          <button type="submit" class="btn btn-sm btn-primary">Guardar</button>
+                          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelarEdicion()">Cancelar</button>
+                        </div>
+                      </form>
+                    } @else if (puedeLeer(comentario)) {
+                      <p class="texto-publicacion mb-0">{{ comentario.contenido }}</p>
+                      @if (comentario.estado === 'BANEADO' && motivoDe(comentario); as motivo) {
+                        <p class="small text-danger mt-1 mb-0"><strong>Motivo del baneo:</strong> {{ motivo }}</p>
+                      }
+                    } @else {
+                      <p class="texto-publicacion fst-italic mb-0">Este comentario fue retirado por el equipo de moderación.</p>
+                    }
+
+                    @if (editando() !== comentario.id && (foro.puedeModificar(comentario) || foro.puedeEliminar(comentario) || auth.puedeModerar())) {
+                      <div class="d-flex flex-wrap gap-2 mt-2">
+                        @if (foro.puedeModificar(comentario)) {
+                          <button type="button" class="btn btn-sm btn-link p-0" (click)="empezarEdicion(comentario)">Modificar</button>
+                        }
+                        @if (foro.puedeEliminar(comentario)) {
+                          <button type="button" class="btn btn-sm btn-link link-danger p-0" (click)="eliminarComentario(comentario)">Eliminar</button>
+                        }
+                        @if (auth.puedeModerar()) {
+                          @if (comentario.estado === 'PUBLICADO') {
+                            <button type="button" class="btn btn-sm btn-link link-danger p-0" (click)="banearComentario(comentario)">Banear</button>
+                          } @else {
+                            <button type="button" class="btn btn-sm btn-link link-success p-0" (click)="restaurarComentario(comentario)">Restaurar</button>
+                          }
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="text-secondary">Nadie ha respondido todavía. ¡Rompe el hielo!</p>
+          }
+
+          <!-- Comentar -->
+          @if (tema.estado === 'BANEADO') {
+            <div class="tarjeta tarjeta-cuerpo text-secondary"><i class="bi bi-lock"></i> Los temas baneados no aceptan comentarios.</div>
+          } @else if (auth.usuario(); as usuario) {
+            <form class="tarjeta tarjeta-cuerpo" (submit)="$event.preventDefault(); comentar()" novalidate>
+              <div class="d-flex gap-3">
+                <app-avatar class="d-none d-sm-block" [nombre]="usuario.nombre" [color]="usuario.color" />
+                <div class="flex-grow-1" style="min-width: 0">
+                  <label class="form-label" for="nuevoComentario">Tu respuesta</label>
+                  <textarea id="nuevoComentario" class="form-control" rows="4" [formControl]="nuevo"
+                            placeholder="Escribe con respeto: del otro lado hay personas." [class.is-invalid]="error(nuevo)"></textarea>
+                  <div class="d-flex justify-content-between gap-3 mt-1">
+                    <div>
+                      @if (error(nuevo); as mensaje) {
+                        <div class="invalid-feedback d-block mt-0">{{ mensaje }}</div>
+                      }
+                    </div>
+                    <span class="contador" [class.excedido]="nuevo.value.trim().length > largoMaximo">{{ nuevo.value.trim().length }} / {{ largoMaximo }}</span>
+                  </div>
+                  <button type="submit" class="btn btn-primary mt-2"><i class="bi bi-send"></i> Publicar respuesta</button>
+                </div>
+              </div>
+            </form>
+          } @else {
+            <div class="tarjeta tarjeta-cuerpo d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+              <div>
+                <strong>¿Quieres responder?</strong>
+                <div class="text-secondary">Ingresa o crea una cuenta para comentar este tema.</div>
+              </div>
+              <div class="d-flex gap-2">
+                <a class="btn btn-primary" routerLink="/ingresar" [queryParams]="{ volver: '/temas/' + tema.id }">Ingresar</a>
+                <a class="btn btn-outline-primary" routerLink="/registro">Crear cuenta</a>
+              </div>
+            </div>
+          }
+        </section>
+      </div>
+
+      <!-- Lateral -->
+      <aside class="col-12 col-lg-4">
+        <div class="lateral-fijo d-grid gap-4">
+          <section class="tarjeta tarjeta-cuerpo">
+            <h2 class="titulo-seccion"><i class="bi bi-person-fill"></i> Quien abrió el tema</h2>
+            <div class="d-flex align-items-center gap-3">
+              <app-avatar [nombre]="tema.autorNombre" [color]="tema.autorColor" [grande]="true" />
+              <div style="min-width: 0">
+                <div class="fw-bold">{{ tema.autorNombre }}</div>
+                @if (autor(); as autor) {
+                  <app-rol [rol]="autor.rol" />
+                  <div class="small text-secondary mt-1">En Tertulia desde {{ autor.fechaRegistro | date: "MMMM 'de' y" }}</div>
+                } @else {
+                  <div class="small text-secondary">Esta cuenta ya no existe.</div>
+                }
+              </div>
+            </div>
+            @if (autor(); as autor) {
+              @if (autor.biografia) {
+                <p class="small text-secondary mt-3 mb-0">{{ autor.biografia }}</p>
+              }
+              <div class="d-flex gap-4 mt-3 small">
+                <span><strong>{{ autor.temas }}</strong> temas</span>
+                <span><strong>{{ autor.comentarios }}</strong> comentarios</span>
+              </div>
+              <a class="btn btn-sm btn-outline-primary mt-3" routerLink="/buscar" [queryParams]="{ autor: autor.id }">Ver sus temas</a>
+            }
+          </section>
+
+          @if (relacionados().length > 0) {
+            <section class="tarjeta tarjeta-cuerpo">
+              <h2 class="titulo-seccion"><i class="bi bi-collection-fill"></i> Más de {{ tema.categoria?.nombre }}</h2>
+              <ol class="lista-compacta">
+                @for (otro of relacionados(); track otro.id) {
+                  <li>
+                    <div>
+                      <a [routerLink]="['/temas', otro.id]">{{ otro.titulo }}</a>
+                      <div class="small text-secondary">{{ otro.comentarios }} respuestas</div>
+                    </div>
+                  </li>
+                }
+              </ol>
+            </section>
+          }
+        </div>
+      </aside>
+    </div>
+  } @else {
+    <div class="tarjeta vacio">
+      <img src="imagenes/vacio.svg" alt="">
+      <h1 class="h4">Este tema no está disponible</h1>
+      <p class="mb-3">Puede que lo hayan eliminado o que el equipo de moderación lo haya retirado.</p>
+      <a class="btn btn-primary" routerLink="/">Volver al inicio</a>
+    </div>
+  }
+</div>

@@ -1,0 +1,95 @@
+<div class="container pagina">
+  <nav aria-label="Ruta de navegación">
+    <ol class="breadcrumb migas">
+      <li class="breadcrumb-item"><a routerLink="/">Inicio</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ esEdicion() ? 'Modificar tema' : 'Nuevo tema' }}</li>
+    </ol>
+  </nav>
+
+  @if (esEdicion() && !puedeEditar()) {
+    <div class="tarjeta vacio">
+      <img src="imagenes/vacio.svg" alt="">
+      <h1 class="h4">No puedes modificar este tema</h1>
+      <p class="mb-3">Solo el autor puede modificar un tema, y solo mientras esté publicado.</p>
+      <a class="btn btn-primary" routerLink="/">Volver al inicio</a>
+    </div>
+  } @else {
+    <div class="row g-4">
+      <div class="col-12 col-lg-8">
+        <h1 class="h3 mb-3">{{ esEdicion() ? 'Modificar tema' : 'Publicar un tema nuevo' }}</h1>
+
+        <form class="tarjeta tarjeta-cuerpo" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+          @if (errorGeneral(); as mensaje) {
+            <div class="alert alert-danger" role="alert"><i class="bi bi-exclamation-triangle-fill"></i> {{ mensaje }}</div>
+          }
+
+          <div class="mb-3">
+            <label class="form-label" for="categoriaId">Categoría <span class="text-danger">*</span></label>
+            <select id="categoriaId" class="form-select" formControlName="categoriaId" [class.is-invalid]="error('categoriaId')">
+              <option [ngValue]="0" disabled>Elige una categoría…</option>
+              @for (categoria of foro.categorias(); track categoria.id) {
+                <option [ngValue]="categoria.id">{{ categoria.nombre }}</option>
+              }
+            </select>
+            @if (error('categoriaId'); as mensaje) {
+              <div class="invalid-feedback">{{ mensaje }}</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="titulo">Título <span class="text-danger">*</span></label>
+            <input id="titulo" type="text" class="form-control" formControlName="titulo" maxlength="160"
+                   placeholder="Resume tu pregunta o tema en una frase" [class.is-invalid]="error('titulo')">
+            <div class="d-flex justify-content-between gap-3 mt-1">
+              <div>
+                @if (error('titulo'); as mensaje) {
+                  <div class="invalid-feedback d-block mt-0">{{ mensaje }}</div>
+                } @else {
+                  <div class="form-text mt-0">Entre 5 y 150 caracteres.</div>
+                }
+              </div>
+              <span class="contador" [class.excedido]="largoDe('titulo') > 150">{{ largoDe('titulo') }} / 150</span>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label" for="contenido">Contenido <span class="text-danger">*</span></label>
+            <textarea id="contenido" class="form-control" rows="9" formControlName="contenido"
+                      placeholder="Cuenta el detalle: qué necesitas, qué probaste, qué opinas…" [class.is-invalid]="error('contenido')"></textarea>
+            <div class="d-flex justify-content-between gap-3 mt-1">
+              <div>
+                @if (error('contenido'); as mensaje) {
+                  <div class="invalid-feedback d-block mt-0">{{ mensaje }}</div>
+                } @else {
+                  <div class="form-text mt-0">Entre 10 y 4.000 caracteres.</div>
+                }
+              </div>
+              <span class="contador" [class.excedido]="largoDe('contenido') > 4000">{{ largoDe('contenido') }} / 4000</span>
+            </div>
+          </div>
+
+          <div class="d-flex flex-column flex-sm-row gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi" [class.bi-send]="!esEdicion()" [class.bi-check-lg]="esEdicion()"></i>
+              {{ esEdicion() ? 'Guardar cambios' : 'Publicar tema' }}
+            </button>
+            <a class="btn btn-outline-secondary" [routerLink]="esEdicion() ? ['/temas', id()] : ['/']">Cancelar</a>
+          </div>
+        </form>
+      </div>
+
+      <aside class="col-12 col-lg-4">
+        <section class="tarjeta tarjeta-cuerpo lateral-fijo">
+          <h2 class="titulo-seccion"><i class="bi bi-lightbulb-fill"></i> Antes de publicar</h2>
+          <ul class="ps-3 mb-3 d-grid gap-2 text-secondary">
+            <li>Busca primero: puede que ya exista un tema igual.</li>
+            <li>Un título claro consigue más y mejores respuestas.</li>
+            <li>Elige la categoría que corresponde.</li>
+            <li>No compartas datos personales tuyos ni de otras personas.</li>
+          </ul>
+          <a class="small" routerLink="/normas"><i class="bi bi-shield-check"></i> Normas del foro</a>
+        </section>
+      </aside>
+    </div>
+  }
+</div>

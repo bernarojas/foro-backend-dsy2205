@@ -1,7 +1,12 @@
-# Base de datos Oracle para desarrollo local + los dos microservicios.
+# Base de datos Oracle para desarrollo local + los tres microservicios + el FrontEnd.
 #
-#   Solo la base:          docker compose up -d oracle
-#   Base + microservicios: docker compose --profile apps up -d --build
+#   Solo la base:                     docker compose up -d oracle
+#   Base + microservicios + FrontEnd: docker compose --profile apps up -d --build
+#
+#   FrontEnd:      http://localhost:8084
+#   ms-usuarios:   http://localhost:8081    ms-foro: http://localhost:8082    ms-moderacion: http://localhost:8083
+#
+# Para la nube con Oracle Cloud (sin la base local) se usa docker-compose.cloud.yml.
 #
 # La primera vez la base tarda ~1 minuto: crea el usuario FORO y ejecuta
 # database/02_script_foro.sql (tablas + datos de prueba).
@@ -55,6 +60,30 @@ services:
     depends_on:
       oracle:
         condition: service_healthy
+
+  ms-moderacion:
+    profiles: ["apps"]
+    build: ./ms-moderacion
+    container_name: foro-ms-moderacion
+    ports:
+      - "8083:8083"
+    environment:
+      DB_URL: jdbc:oracle:thin:@//oracle:1521/FREEPDB1
+      DB_USER: FORO
+      DB_PASSWORD: Foro_Duoc_2026
+      JWT_SECRET: clave-de-desarrollo-foro-duoc-dsy2205-cambiar-en-produccion
+    depends_on:
+      oracle:
+        condition: service_healthy
+
+  # FrontEnd Angular servido con nginx. En esta entrega funciona por separado del BackEnd:
+  # maneja la información con arreglos, sin llamar a los microservicios.
+  frontend:
+    profiles: ["apps"]
+    build: ./frontend
+    container_name: foro-frontend
+    ports:
+      - "${FRONTEND_PORT:-8084}:80"
 
 volumes:
   foro-oracle-data:

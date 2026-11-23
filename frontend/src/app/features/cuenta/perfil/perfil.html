@@ -1,0 +1,153 @@
+<div class="container pagina">
+  @if (yo(); as yo) {
+    <nav aria-label="Ruta de navegación">
+      <ol class="breadcrumb migas">
+        <li class="breadcrumb-item"><a routerLink="/">Inicio</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Mi perfil</li>
+      </ol>
+    </nav>
+
+    <div class="row g-4">
+      <!-- Resumen de la cuenta -->
+      <aside class="col-12 col-lg-4">
+        <section class="tarjeta tarjeta-cuerpo text-center lateral-fijo">
+          <app-avatar [nombre]="formDatos.controls.nombre.value || yo.nombre" [color]="formDatos.controls.color.value" [grande]="true" />
+          <h1 class="h4 mt-3 mb-1 text-break">{{ yo.nombre }}</h1>
+          <p class="text-secondary small mb-2 text-break">{{ yo.email }}</p>
+          <app-rol [rol]="yo.rol" />
+          @if (yo.biografia) {
+            <p class="small text-secondary mt-3 mb-0">{{ yo.biografia }}</p>
+          }
+          <hr>
+          <div class="row text-center g-2">
+            <div class="col-4"><strong class="d-block fs-5">{{ yo.temas }}</strong><span class="small text-secondary">temas</span></div>
+            <div class="col-4"><strong class="d-block fs-5">{{ yo.comentarios }}</strong><span class="small text-secondary">comentarios</span></div>
+            <div class="col-4"><strong class="d-block fs-5">{{ yo.fechaRegistro | date: 'MM/yy' }}</strong><span class="small text-secondary">miembro desde</span></div>
+          </div>
+          <a class="btn btn-outline-primary w-100 mt-3" routerLink="/mis-publicaciones"><i class="bi bi-journal-text"></i> Mis publicaciones</a>
+        </section>
+      </aside>
+
+      <div class="col-12 col-lg-8 d-grid gap-4">
+        <!-- Datos personales -->
+        <section class="tarjeta tarjeta-cuerpo" aria-labelledby="tituloDatos">
+          <h2 class="titulo-seccion" id="tituloDatos"><i class="bi bi-person-gear"></i> Datos personales</h2>
+
+          @if (errorDatos(); as mensaje) {
+            <div class="alert alert-danger" role="alert"><i class="bi bi-exclamation-triangle-fill"></i> {{ mensaje }}</div>
+          }
+
+          <form [formGroup]="formDatos" (ngSubmit)="guardarDatos()" novalidate>
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label" for="nombre">Nombre y apellido <span class="text-danger">*</span></label>
+                <input id="nombre" type="text" class="form-control" formControlName="nombre" autocomplete="name"
+                       maxlength="100" [class.is-invalid]="errorDe('nombre')">
+                @if (errorDe('nombre'); as mensaje) {
+                  <div class="invalid-feedback">{{ mensaje }}</div>
+                }
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label" for="email">Correo <span class="text-danger">*</span></label>
+                <input id="email" type="email" class="form-control" formControlName="email" autocomplete="email"
+                       maxlength="120" [class.is-invalid]="errorDe('email')">
+                @if (errorDe('email'); as mensaje) {
+                  <div class="invalid-feedback">{{ mensaje }}</div>
+                }
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="biografia">Sobre ti</label>
+                <textarea id="biografia" class="form-control" rows="3" formControlName="biografia"
+                          placeholder="Cuéntale al foro qué te gusta (opcional)" [class.is-invalid]="errorDe('biografia')"></textarea>
+                <div class="d-flex justify-content-between gap-3 mt-1">
+                  <div>
+                    @if (errorDe('biografia'); as mensaje) {
+                      <div class="invalid-feedback d-block mt-0">{{ mensaje }}</div>
+                    }
+                  </div>
+                  <span class="contador" [class.excedido]="formDatos.controls.biografia.value.trim().length > 200">
+                    {{ formDatos.controls.biografia.value.trim().length }} / 200
+                  </span>
+                </div>
+              </div>
+              <div class="col-12">
+                <span class="form-label d-block" id="etiquetaColor">Color de tu avatar</span>
+                <div class="selector-color" role="radiogroup" aria-labelledby="etiquetaColor">
+                  @for (color of colores; track color) {
+                    <button type="button" role="radio" [style.background-color]="color"
+                            [class.elegido]="formDatos.controls.color.value === color"
+                            [attr.aria-checked]="formDatos.controls.color.value === color"
+                            [attr.aria-label]="'Color ' + color" (click)="elegirColor(color)"></button>
+                  }
+                </div>
+              </div>
+              <div class="col-12 d-flex flex-column flex-sm-row gap-2">
+                <button type="submit" class="btn btn-primary" [disabled]="formDatos.pristine"><i class="bi bi-check-lg"></i> Guardar cambios</button>
+                <button type="button" class="btn btn-outline-secondary" [disabled]="formDatos.pristine" (click)="cargarDatos()">Deshacer</button>
+              </div>
+            </div>
+          </form>
+        </section>
+
+        <!-- Contraseña -->
+        <section class="tarjeta tarjeta-cuerpo" aria-labelledby="tituloClave">
+          <h2 class="titulo-seccion" id="tituloClave"><i class="bi bi-key-fill"></i> Cambiar contraseña</h2>
+
+          @if (errorClave(); as mensaje) {
+            <div class="alert alert-danger" role="alert"><i class="bi bi-exclamation-triangle-fill"></i> {{ mensaje }}</div>
+          }
+
+          <form [formGroup]="formClave" (ngSubmit)="cambiarClave()" novalidate>
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label" for="actual">Contraseña actual <span class="text-danger">*</span></label>
+                <input id="actual" [type]="verClave() ? 'text' : 'password'" class="form-control" formControlName="actual"
+                       autocomplete="current-password" [class.is-invalid]="errorDeClave('actual')">
+                @if (errorDeClave('actual'); as mensaje) {
+                  <div class="invalid-feedback">{{ mensaje }}</div>
+                }
+              </div>
+              <div class="col-12 col-md-6 d-flex align-items-end">
+                <div class="form-check form-switch mb-2">
+                  <input id="verClaves" type="checkbox" class="form-check-input" role="switch" [checked]="verClave()" (change)="verClave.set(!verClave())">
+                  <label class="form-check-label" for="verClaves">Mostrar las contraseñas</label>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label" for="nueva">Contraseña nueva <span class="text-danger">*</span></label>
+                <input id="nueva" [type]="verClave() ? 'text' : 'password'" class="form-control" formControlName="nueva"
+                       autocomplete="new-password" maxlength="30" [class.is-invalid]="errorDeClave('nueva')">
+                @if (errorDeClave('nueva'); as mensaje) {
+                  <div class="invalid-feedback">{{ mensaje }}</div>
+                }
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label" for="confirmar">Repite la contraseña nueva <span class="text-danger">*</span></label>
+                <input id="confirmar" [type]="verClave() ? 'text' : 'password'" class="form-control" formControlName="confirmar"
+                       autocomplete="new-password" maxlength="30" [class.is-invalid]="errorDeClave('confirmar')">
+                @if (errorDeClave('confirmar'); as mensaje) {
+                  <div class="invalid-feedback">{{ mensaje }}</div>
+                }
+              </div>
+              <div class="col-12">
+                <app-requisitos-clave [valor]="formClave.controls.nueva.value" />
+              </div>
+              <div class="col-12">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-shield-lock"></i> Cambiar contraseña</button>
+              </div>
+            </div>
+          </form>
+        </section>
+
+        <!-- Eliminar cuenta -->
+        <section class="tarjeta tarjeta-cuerpo zona-peligro" aria-labelledby="tituloEliminar">
+          <h2 class="titulo-seccion text-danger" id="tituloEliminar"><i class="bi bi-exclamation-octagon-fill text-danger"></i> Eliminar mi cuenta</h2>
+          <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <p class="text-secondary mb-0">Esta acción es definitiva. Te pediremos tu contraseña para confirmar.</p>
+            <button type="button" class="btn btn-outline-danger flex-shrink-0" (click)="eliminarCuenta()"><i class="bi bi-trash"></i> Eliminar cuenta</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,180 @@
+<div class="container pagina">
+  <nav aria-label="Ruta de navegación">
+    <ol class="breadcrumb migas">
+      <li class="breadcrumb-item"><a routerLink="/">Inicio</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Moderación</li>
+    </ol>
+  </nav>
+
+  <h1 class="h3 mb-1"><i class="bi bi-shield-check"></i> Panel de moderación</h1>
+  <p class="text-secondary mb-4">Revisa las publicaciones, banea las que incumplen las <a routerLink="/normas">normas</a> y restaura las que se retiraron por error.</p>
+
+  <!-- Resumen: 2 columnas en celular, 4 desde tablet -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="tarjeta dato-resumen"><strong>{{ moderacion.resumen().temasPublicados }}</strong><span>Temas publicados</span></div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="tarjeta dato-resumen alerta"><strong>{{ moderacion.resumen().temasBaneados }}</strong><span>Temas baneados</span></div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="tarjeta dato-resumen"><strong>{{ moderacion.resumen().comentariosPublicados }}</strong><span>Comentarios publicados</span></div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="tarjeta dato-resumen alerta"><strong>{{ moderacion.resumen().comentariosBaneados }}</strong><span>Comentarios baneados</span></div>
+    </div>
+  </div>
+
+  <ul class="nav nav-tabs pestanas" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button type="button" class="nav-link" role="tab" [class.active]="pestana() === 'publicaciones'"
+              [attr.aria-selected]="pestana() === 'publicaciones'" (click)="pestana.set('publicaciones')">
+        <i class="bi bi-card-list"></i> Publicaciones
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button type="button" class="nav-link" role="tab" [class.active]="pestana() === 'historial'"
+              [attr.aria-selected]="pestana() === 'historial'" (click)="pestana.set('historial')">
+        <i class="bi bi-clock-history"></i> Historial <span class="badge text-bg-light">{{ moderacion.resumen().acciones }}</span>
+      </button>
+    </li>
+  </ul>
+
+  @if (pestana() === 'publicaciones') {
+    <div class="tarjeta" style="border-top-left-radius: 0">
+      <div class="tarjeta-cuerpo border-bottom">
+        <div class="row g-3 align-items-end">
+          <div class="col-12 col-md-5">
+            <label class="form-label" for="filtroTexto">Buscar</label>
+            <input id="filtroTexto" type="search" class="form-control" maxlength="80" placeholder="Título, contenido o autor"
+                   [value]="texto()" (input)="texto.set(valor($event))">
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label" for="filtroTipo">Tipo</label>
+            <select id="filtroTipo" class="form-select" (change)="tipo.set($any(valor($event)))">
+              <option value="" [selected]="tipo() === ''">Todos</option>
+              <option value="TEMA" [selected]="tipo() === 'TEMA'">Temas</option>
+              <option value="COMENTARIO" [selected]="tipo() === 'COMENTARIO'">Comentarios</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label" for="filtroEstado">Estado</label>
+            <select id="filtroEstado" class="form-select" (change)="estado.set($any(valor($event)))">
+              <option value="" [selected]="estado() === ''">Todos</option>
+              <option value="PUBLICADO" [selected]="estado() === 'PUBLICADO'">Publicados</option>
+              <option value="BANEADO" [selected]="estado() === 'BANEADO'">Baneados</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-1 d-grid">
+            <button type="button" class="btn btn-outline-secondary" title="Quitar filtros" aria-label="Quitar filtros" (click)="quitarFiltros()">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table tabla tabla-apilable">
+          <thead>
+            <tr>
+              <th scope="col">Publicación</th>
+              <th scope="col">Autor</th>
+              <th scope="col">Fecha</th>
+              <th scope="col">Estado</th>
+              <th scope="col" class="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of publicaciones(); track p.tipo + p.id) {
+              <tr>
+                <td class="principal" style="min-width: 16rem">
+                  <span class="badge text-bg-light border me-1">{{ p.tipo === 'TEMA' ? 'Tema' : 'Comentario' }}</span>
+                  @if (p.tipo === 'TEMA') {
+                    <a class="fw-semibold" [routerLink]="['/temas', p.temaId]">{{ p.titulo }}</a>
+                  } @else {
+                    <span class="text-secondary small me-1">en</span><a [routerLink]="['/temas', p.temaId]" [fragment]="'comentario-' + p.id">{{ p.titulo }}</a>
+                  }
+                  <div class="small text-secondary mt-1 texto-publicacion">{{ p.contenido.length > 140 ? p.contenido.slice(0, 140) + '…' : p.contenido }}</div>
+                  @if (p.motivo) {
+                    <div class="small text-danger mt-1"><strong>Motivo:</strong> {{ p.motivo }}</div>
+                  }
+                </td>
+                <td data-titulo="Autor" class="text-nowrap">{{ p.autorNombre }}</td>
+                <td data-titulo="Fecha" class="text-nowrap small" [attr.title]="p.fecha | date: 'short'">{{ p.fecha | haceCuanto }}</td>
+                <td data-titulo="Estado">
+                  <span class="badge" [class.estado-publicado]="p.estado === 'PUBLICADO'" [class.estado-baneado]="p.estado === 'BANEADO'">
+                    {{ p.estado === 'PUBLICADO' ? 'Publicado' : 'Baneado' }}
+                  </span>
+                </td>
+                <td data-titulo="Acciones" class="text-end text-nowrap">
+                  @if (p.estado === 'PUBLICADO') {
+                    <button type="button" class="btn btn-sm btn-outline-danger" (click)="banear(p)"><i class="bi bi-slash-circle"></i> Banear</button>
+                  } @else {
+                    <button type="button" class="btn btn-sm btn-outline-success" (click)="restaurar(p)"><i class="bi bi-arrow-counterclockwise"></i> Restaurar</button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="principal">
+                  <div class="vacio py-4"><img src="imagenes/vacio.svg" alt=""><p class="mb-0">No hay publicaciones con esos filtros.</p></div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  } @else {
+    <div class="row g-4">
+      <div class="col-12 col-lg-9">
+        <div class="tarjeta" style="border-top-left-radius: 0">
+          <div class="table-responsive">
+            <table class="table tabla tabla-apilable">
+              <thead>
+                <tr>
+                  <th scope="col">Publicación</th>
+                  <th scope="col">Acción</th>
+                  <th scope="col">Moderador</th>
+                  <th scope="col">Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (registro of moderacion.historial(); track registro.id) {
+                  <tr>
+                    <td class="principal" style="min-width: 15rem">
+                      <span class="badge text-bg-light border me-1">{{ registro.tipo === 'TEMA' ? 'Tema' : 'Comentario' }}</span>
+                      <span class="fw-semibold">{{ registro.referencia }}</span>
+                      <div class="small text-secondary mt-1"><strong>Motivo:</strong> {{ registro.motivo }}</div>
+                    </td>
+                    <td data-titulo="Acción">
+                      <span class="badge" [class.estado-baneado]="registro.accion === 'BANEAR'" [class.estado-publicado]="registro.accion === 'RESTAURAR'">
+                        {{ registro.accion === 'BANEAR' ? 'Baneo' : 'Restauración' }}
+                      </span>
+                    </td>
+                    <td data-titulo="Moderador" class="text-nowrap">{{ registro.moderadorNombre }}</td>
+                    <td data-titulo="Fecha" class="text-nowrap small">{{ registro.fecha | date: 'dd/MM/y HH:mm' }}</td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="4" class="principal"><div class="vacio py-4"><p class="mb-0">Todavía no hay acciones de moderación.</p></div></td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <aside class="col-12 col-lg-3">
+        <section class="tarjeta tarjeta-cuerpo">
+          <h2 class="titulo-seccion"><i class="bi bi-bar-chart-fill"></i> Acciones por moderador</h2>
+          <ul class="list-unstyled mb-0 d-grid gap-2">
+            @for (fila of moderacion.resumen().porModerador; track fila.nombre) {
+              <li class="d-flex justify-content-between gap-2"><span>{{ fila.nombre }}</span><strong>{{ fila.acciones }}</strong></li>
+            } @empty {
+              <li class="text-secondary">Sin acciones registradas.</li>
+            }
+          </ul>
+        </section>
+      </aside>
+    </div>
+  }
+</div>

@@ -1,0 +1,80 @@
+<div class="container pagina">
+  <nav aria-label="Ruta de navegación">
+    <ol class="breadcrumb migas">
+      <li class="breadcrumb-item"><a routerLink="/">Inicio</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Buscar temas</li>
+    </ol>
+  </nav>
+
+  <h1 class="h3 mb-3">Buscar temas</h1>
+
+  <form class="tarjeta tarjeta-cuerpo mb-4" [formGroup]="form" (ngSubmit)="buscar()" novalidate>
+    <div class="row g-3 align-items-start">
+      <div class="col-12 col-lg-4">
+        <label class="form-label" for="texto">Texto</label>
+        <input id="texto" type="search" class="form-control" formControlName="texto" maxlength="80"
+               placeholder="En el título o el contenido" [class.is-invalid]="errorTexto()">
+        @if (errorTexto(); as mensaje) {
+          <div class="invalid-feedback">{{ mensaje }}</div>
+        }
+      </div>
+      <div class="col-12 col-md-4 col-lg-3">
+        <label class="form-label" for="categoriaId">Categoría</label>
+        <select id="categoriaId" class="form-select" formControlName="categoriaId">
+          <option [ngValue]="0">Todas</option>
+          @for (categoria of foro.categorias(); track categoria.id) {
+            <option [ngValue]="categoria.id">{{ categoria.nombre }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-12 col-md-4 col-lg-3">
+        <label class="form-label" for="autorId">Autor</label>
+        <select id="autorId" class="form-select" formControlName="autorId">
+          <option [ngValue]="0">Cualquiera</option>
+          @for (autor of autores(); track autor.id) {
+            <option [ngValue]="autor.id">{{ autor.nombre }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-12 col-md-4 col-lg-2">
+        <label class="form-label" for="orden">Orden</label>
+        <select id="orden" class="form-select" formControlName="orden">
+          <option value="recientes">Más nuevos</option>
+          <option value="actividad">Actividad reciente</option>
+          <option value="comentados">Más comentados</option>
+          <option value="antiguos">Más antiguos</option>
+        </select>
+      </div>
+      <div class="col-12 d-flex flex-wrap gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Buscar</button>
+        @if (hayFiltros()) {
+          <button type="button" class="btn btn-outline-secondary" (click)="limpiar()"><i class="bi bi-x-lg"></i> Quitar filtros</button>
+        }
+      </div>
+    </div>
+  </form>
+
+  <p class="text-secondary" aria-live="polite">
+    @if (resultados().length === 1) {
+      <strong class="text-body">1</strong> tema encontrado
+    } @else {
+      <strong class="text-body">{{ resultados().length }}</strong> temas encontrados
+    }
+    @if (q()) {
+      para «{{ q() }}»
+    }
+  </p>
+
+  <div class="tarjeta">
+    @if (resultados().length > 0) {
+      <app-lista-temas [temas]="resultados()" />
+    } @else {
+      <div class="vacio">
+        <img src="imagenes/vacio.svg" alt="">
+        <h2 class="h5">No encontramos temas con esos filtros</h2>
+        <p class="mb-3">Prueba con otras palabras o quita algún filtro.</p>
+        <a class="btn btn-primary" routerLink="/temas/nuevo">Abrir un tema sobre esto</a>
+      </div>
+    }
+  </div>
+</div>

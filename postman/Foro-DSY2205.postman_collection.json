@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Sistema de Foros - DSY2205",
-    "description": "Pruebas de los dos microservicios del Sistema de Foros en Línea.\n\n- ms-usuarios (puerto 8081): usuarios, roles e inicio de sesión.\n- ms-foro (puerto 8082): categorías, búsqueda, publicación de temas y comentarios.\n\nEjecutar las carpetas en orden: la carpeta 0 inicia sesión y guarda los tokens en variables de la colección. Con el Runner se puede ejecutar todo de una vez: al final deja la base como estaba.\n\nUsuarios de prueba (clave Duoc2026!): admin@foro.cl (ADMINISTRADOR), moderador@foro.cl (MODERADOR), diego@foro.cl y valentina@foro.cl (USUARIO), matias@foro.cl (USUARIO bloqueado).",
+    "description": "Pruebas de los tres microservicios del Sistema de Foros en Línea.\n\n- ms-usuarios (puerto 8081): usuarios, roles e inicio de sesión.\n- ms-foro (puerto 8082): categorías, búsqueda, publicación de temas y comentarios.\n- ms-moderacion (puerto 8083): revisión, baneo y restauración de temas y comentarios, con historial.\n\nEjecutar las carpetas en orden: la carpeta 0 inicia sesión y guarda los tokens en variables de la colección. Con el Runner se puede ejecutar todo de una vez: al final deja la base como estaba (solo crece el historial de moderación).\n\nUsuarios de prueba (clave Duoc2026!): admin@foro.cl (ADMINISTRADOR), moderador@foro.cl (MODERADOR), diego@foro.cl y valentina@foro.cl (USUARIO), matias@foro.cl (USUARIO bloqueado).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -12,6 +12,10 @@
     {
       "key": "baseForo",
       "value": "http://localhost:8082/api"
+    },
+    {
+      "key": "baseModeracion",
+      "value": "http://localhost:8083/api"
     },
     {
       "key": "clave",
@@ -67,6 +71,22 @@
     },
     {
       "key": "comentarioId",
+      "value": ""
+    },
+    {
+      "key": "temaModeradoId",
+      "value": ""
+    },
+    {
+      "key": "comentarioModeradoId",
+      "value": ""
+    },
+    {
+      "key": "temasBaneados",
+      "value": ""
+    },
+    {
+      "key": "comentariosBaneados",
       "value": ""
     }
   ],
@@ -2428,6 +2448,1375 @@
               "path": [
                 "temas",
                 "{{temaId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Moderación: banear y restaurar (ms-moderacion)",
+      "item": [
+        {
+          "name": "Estado del servicio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "pm.test(\"Es ms-moderacion\", () => pm.expect(pm.response.json().servicio).to.eql(\"ms-moderacion\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseModeracion}}/estado",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "estado"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Diego publica un tema que incumple las normas (ms-foro)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set(\"temaModeradoId\", j.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDiego}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseForo}}/temas",
+              "host": [
+                "{{baseForo}}"
+              ],
+              "path": [
+                "temas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoriaId\": 2,\n  \"titulo\": \"GANA DINERO FÁCIL desde tu casa\",\n  \"contenido\": \"Entra a este enlace y gana dinero sin hacer nada. ¡Cupos limitados!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Valentina deja un comentario ofensivo (ms-foro)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set(\"comentarioModeradoId\", j.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenValentina}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseForo}}/temas/{{temaModeradoId}}/comentarios",
+              "host": [
+                "{{baseForo}}"
+              ],
+              "path": [
+                "temas",
+                "{{temaModeradoId}}",
+                "comentarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contenido\": \"Solo un tonto caería en esto, igual que tú.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar temas para revisión (MODERADOR)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "const tema = pm.response.json().find(t => t.id === Number(pm.collectionVariables.get(\"temaModeradoId\")));",
+                  "pm.test(\"Trae el tema nuevo, publicado\", () => { pm.expect(tema.tipo).to.eql(\"TEMA\"); pm.expect(tema.estado).to.eql(\"PUBLICADO\"); pm.expect(tema.autorNombre).to.eql(\"Diego Soto\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenModerador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/temas",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "temas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar temas sin token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/temas",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "temas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar temas como USUARIO (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDiego}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/temas",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "temas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Resumen antes de moderar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Cuenta publicados y baneados\", () => { pm.expect(j.temas.total).to.eql(j.temas.publicados + j.temas.baneados); pm.expect(j.comentarios.total).to.eql(j.comentarios.publicados + j.comentarios.baneados); });",
+                  "pm.collectionVariables.set(\"temasBaneados\", j.temas.baneados);",
+                  "pm.collectionVariables.set(\"comentariosBaneados\", j.comentarios.baneados);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/resumen",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "resumen"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Banear tema como USUARIO (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDiego}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/temas/{{temaModeradoId}}/banear",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "temas",
+                "{{temaModeradoId}}",
+                "banear"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Quiero banear mi propio tema\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Banear tema sin token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/temas/{{temaModeradoId}}/banear",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "temas",
+                "{{temaModeradoId}}",
+                "banear"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Spam\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Banear tema con motivo vacío (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "pm.test(\"Indica que falta el motivo\", () => pm.expect(pm.response.json().campos.motivo).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenModerador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/temas/{{temaModeradoId}}/banear",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "temas",
+                "{{temaModeradoId}}",
+                "banear"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Banear tema inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenModerador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/temas/999999/banear",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "temas",
+                "999999",
+                "banear"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Spam\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "MODERADOR banea el tema",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "pm.test(\"Queda BANEADO\", () => pm.expect(pm.response.json().estado).to.eql(\"BANEADO\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenModerador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/temas/{{temaModeradoId}}/banear",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "temas",
+                "{{temaModeradoId}}",
+                "banear"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Spam: publicidad engañosa\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Banear el tema otra vez (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/temas/{{temaModeradoId}}/banear",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "temas",
+                "{{temaModeradoId}}",
+                "banear"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Spam\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "El tema baneado ya no se ve en el foro (ms-foro, 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseForo}}/temas/{{temaModeradoId}}",
+              "host": [
+                "{{baseForo}}"
+              ],
+              "path": [
+                "temas",
+                "{{temaModeradoId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Tampoco sale en la búsqueda del foro (ms-foro)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "pm.test(\"No trae el tema baneado\", () => pm.expect(pm.response.json().map(t => t.id)).to.not.include(Number(pm.collectionVariables.get(\"temaModeradoId\"))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseForo}}/temas?texto=dinero",
+              "host": [
+                "{{baseForo}}"
+              ],
+              "path": [
+                "temas"
+              ],
+              "query": [
+                {
+                  "key": "texto",
+                  "value": "dinero"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar temas baneados con filtros",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Solo baneados, y trae el tema\", () => { j.forEach(t => pm.expect(t.estado).to.eql(\"BANEADO\")); pm.expect(j.map(t => t.id)).to.include(Number(pm.collectionVariables.get(\"temaModeradoId\"))); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/temas?estado=BANEADO&texto=dinero",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "temas"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "BANEADO"
+                },
+                {
+                  "key": "texto",
+                  "value": "dinero"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Resumen con el tema baneado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "pm.test(\"Hay un tema baneado más\", () => pm.expect(pm.response.json().temas.baneados).to.eql(Number(pm.collectionVariables.get(\"temasBaneados\")) + 1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenModerador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/resumen",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "resumen"
+              ]
+            }
+          }
+        },
+        {
+          "name": "ADMINISTRADOR restaura el tema",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "pm.test(\"Queda PUBLICADO\", () => pm.expect(pm.response.json().estado).to.eql(\"PUBLICADO\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/temas/{{temaModeradoId}}/restaurar",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "temas",
+                "{{temaModeradoId}}",
+                "restaurar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Apelación del autor aceptada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Restaurar el tema otra vez (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/temas/{{temaModeradoId}}/restaurar",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "temas",
+                "{{temaModeradoId}}",
+                "restaurar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Apelación del autor aceptada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "El tema restaurado vuelve a verse en el foro (ms-foro)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "pm.test(\"Está publicado\", () => pm.expect(pm.response.json().estado).to.eql(\"PUBLICADO\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseForo}}/temas/{{temaModeradoId}}",
+              "host": [
+                "{{baseForo}}"
+              ],
+              "path": [
+                "temas",
+                "{{temaModeradoId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar comentarios para revisión",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "const comentario = pm.response.json().find(c => c.id === Number(pm.collectionVariables.get(\"comentarioModeradoId\")));",
+                  "pm.test(\"Trae el comentario con su tema\", () => { pm.expect(comentario.tipo).to.eql(\"COMENTARIO\"); pm.expect(comentario.temaId).to.eql(Number(pm.collectionVariables.get(\"temaModeradoId\"))); pm.expect(comentario.autorNombre).to.eql(\"Valentina Muñoz\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenModerador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/comentarios?texto=tonto",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "comentarios"
+              ],
+              "query": [
+                {
+                  "key": "texto",
+                  "value": "tonto"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Banear comentario como USUARIO (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenValentina}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/comentarios/{{comentarioModeradoId}}/banear",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "comentarios",
+                "{{comentarioModeradoId}}",
+                "banear"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"No me gusta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ADMINISTRADOR banea el comentario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Queda BANEADO\", () => { pm.expect(j.tipo).to.eql(\"COMENTARIO\"); pm.expect(j.estado).to.eql(\"BANEADO\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/comentarios/{{comentarioModeradoId}}/banear",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "comentarios",
+                "{{comentarioModeradoId}}",
+                "banear"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Insulta a otro usuario\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Banear el comentario otra vez (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenModerador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/comentarios/{{comentarioModeradoId}}/banear",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "comentarios",
+                "{{comentarioModeradoId}}",
+                "banear"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Insulta a otro usuario\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "El comentario baneado ya no sale en el tema (ms-foro)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "pm.test(\"No trae el comentario baneado\", () => pm.expect(pm.response.json().map(c => c.id)).to.not.include(Number(pm.collectionVariables.get(\"comentarioModeradoId\"))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseForo}}/temas/{{temaModeradoId}}/comentarios",
+              "host": [
+                "{{baseForo}}"
+              ],
+              "path": [
+                "temas",
+                "{{temaModeradoId}}",
+                "comentarios"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar comentarios baneados",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Solo baneados, y trae el comentario\", () => { j.forEach(c => pm.expect(c.estado).to.eql(\"BANEADO\")); pm.expect(j.map(c => c.id)).to.include(Number(pm.collectionVariables.get(\"comentarioModeradoId\"))); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenModerador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/comentarios?estado=BANEADO",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "comentarios"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "BANEADO"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "MODERADOR restaura el comentario (sin motivo)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "pm.test(\"Queda PUBLICADO\", () => pm.expect(pm.response.json().estado).to.eql(\"PUBLICADO\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenModerador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/comentarios/{{comentarioModeradoId}}/restaurar",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "comentarios",
+                "{{comentarioModeradoId}}",
+                "restaurar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Restaurar comentario inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenModerador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/comentarios/999999/restaurar",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "comentarios",
+                "999999",
+                "restaurar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Historial del tema",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Restauración y baneo, lo más reciente primero\", () => { pm.expect(j.map(m => m.accion)).to.eql([\"RESTAURAR\", \"BANEAR\"]); pm.expect(j[1].motivo).to.eql(\"Spam: publicidad engañosa\"); });",
+                  "pm.test(\"El moderador sale del token\", () => { pm.expect(j[0].moderadorNombre).to.eql(\"Administrador Foro\"); pm.expect(j[1].moderadorNombre).to.eql(\"Camila Rojas\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenModerador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/historial?tipo=TEMA&publicacionId={{temaModeradoId}}",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "historial"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "TEMA"
+                },
+                {
+                  "key": "publicacionId",
+                  "value": "{{temaModeradoId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Historial con filtros (baneos de comentarios)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Solo baneos de comentarios, con motivo\", () => { j.forEach(m => { pm.expect(m.tipo).to.eql(\"COMENTARIO\"); pm.expect(m.accion).to.eql(\"BANEAR\"); pm.expect(m.motivo).to.be.a(\"string\"); }); pm.expect(j[0].publicacionId).to.eql(Number(pm.collectionVariables.get(\"comentarioModeradoId\"))); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/historial?tipo=COMENTARIO&accion=BANEAR",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "historial"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "COMENTARIO"
+                },
+                {
+                  "key": "accion",
+                  "value": "BANEAR"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Historial como USUARIO (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenValentina}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/historial",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "historial"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Resumen de moderación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve JSON\", () => pm.response.to.be.json);",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Los baneados quedaron como antes\", () => { pm.expect(j.temas.baneados).to.eql(Number(pm.collectionVariables.get(\"temasBaneados\"))); pm.expect(j.comentarios.baneados).to.eql(Number(pm.collectionVariables.get(\"comentariosBaneados\"))); });",
+                  "pm.test(\"Acciones por moderador\", () => { j.moderadores.forEach(m => pm.expect(m.total).to.eql(m.baneos + m.restauraciones)); pm.expect(j.totalAcciones).to.eql(j.moderadores.reduce((suma, m) => suma + m.total, 0)); pm.expect(j.moderadores.map(m => m.moderadorNombre)).to.include.members([\"Camila Rojas\", \"Administrador Foro\"]); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseModeracion}}/moderacion/resumen",
+              "host": [
+                "{{baseModeracion}}"
+              ],
+              "path": [
+                "moderacion",
+                "resumen"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Limpieza: el autor elimina su tema (ms-foro)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDiego}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseForo}}/temas/{{temaModeradoId}}",
+              "host": [
+                "{{baseForo}}"
+              ],
+              "path": [
+                "temas",
+                "{{temaModeradoId}}"
               ]
             }
           }
