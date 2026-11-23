@@ -1,0 +1,66 @@
+<div class="container pagina">
+  <nav aria-label="Ruta de navegación">
+    <ol class="breadcrumb migas">
+      <li class="breadcrumb-item"><a routerLink="/">Inicio</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Mis publicaciones</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <h1 class="h3 mb-0">Mis publicaciones</h1>
+    <a class="btn btn-acento" routerLink="/temas/nuevo"><i class="bi bi-plus-lg"></i> Nuevo tema</a>
+  </div>
+
+  <ul class="nav nav-tabs pestanas" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button type="button" class="nav-link" role="tab" [class.active]="pestana() === 'temas'"
+              [attr.aria-selected]="pestana() === 'temas'" (click)="pestana.set('temas')">
+        Temas <span class="badge text-bg-light">{{ temas().length }}</span>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button type="button" class="nav-link" role="tab" [class.active]="pestana() === 'comentarios'"
+              [attr.aria-selected]="pestana() === 'comentarios'" (click)="pestana.set('comentarios')">
+        Comentarios <span class="badge text-bg-light">{{ comentarios().length }}</span>
+      </button>
+    </li>
+  </ul>
+
+  <div class="tarjeta" style="border-top-left-radius: 0">
+    @if (pestana() === 'temas') {
+      @if (temas().length > 0) {
+        <app-lista-temas [temas]="temas()" />
+      } @else {
+        <div class="vacio">
+          <img src="imagenes/vacio.svg" alt="">
+          <h2 class="h5">Todavía no has publicado temas</h2>
+          <p class="mb-3">Abre el primero: toma un minuto.</p>
+          <a class="btn btn-primary" routerLink="/temas/nuevo">Publicar un tema</a>
+        </div>
+      }
+    } @else {
+      @for (comentario of comentarios(); track comentario.id) {
+        <div class="comentario" [class.retirado]="comentario.estado === 'BANEADO'">
+          <div class="comentario-cuerpo">
+            <div class="small text-secondary mb-1">
+              En <a [routerLink]="['/temas', comentario.temaId]" [fragment]="'comentario-' + comentario.id">{{ comentario.temaTitulo }}</a>
+              · {{ comentario.fechaCreacion | haceCuanto }}
+              @if (comentario.estado === 'BANEADO') {
+                <span class="badge estado-baneado ms-1"><i class="bi bi-slash-circle"></i> Baneado</span>
+              }
+            </div>
+            <p class="texto-publicacion mb-2">{{ comentario.contenido }}</p>
+            <button type="button" class="btn btn-sm btn-link link-danger p-0" (click)="eliminarComentario(comentario.id)">Eliminar</button>
+          </div>
+        </div>
+      } @empty {
+        <div class="vacio">
+          <img src="imagenes/vacio.svg" alt="">
+          <h2 class="h5">Todavía no has comentado</h2>
+          <p class="mb-3">Busca un tema que te interese y deja tu opinión.</p>
+          <a class="btn btn-primary" routerLink="/buscar">Explorar temas</a>
+        </div>
+      }
+    }
+  </div>
+</div>
