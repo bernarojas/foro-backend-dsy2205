@@ -1,0 +1,52 @@
+<a class="visually-hidden-focusable saltar" href="#principal">Saltar al contenido</a>
+
+<app-navbar />
+
+<main id="principal" class="contenido">
+  <router-outlet />
+</main>
+
+<footer class="pie">
+  <div class="container">
+    <div class="row gy-4">
+      <div class="col-12 col-md-6 col-lg-5">
+        <div class="marca mb-2">
+          <img src="logo.svg" alt="" width="30" height="30">
+          <span>Tertulia</span>
+        </div>
+        <p class="mb-0 pie-texto">
+          Un foro para conversar con calma de programación, videojuegos, cine, deportes, música y tecnología.
+        </p>
+      </div>
+      <div class="col-6 col-md-3 col-lg-3 offset-lg-1">
+        <h2 class="pie-titulo">El foro</h2>
+        <ul class="list-unstyled mb-0">
+          <li><a routerLink="/">Inicio</a></li>
+          <li><a routerLink="/buscar">Buscar temas</a></li>
+          <li><a routerLink="/normas">Normas del foro</a></li>
+        </ul>
+      </div>
+      <div class="col-6 col-md-3 col-lg-3">
+        <h2 class="pie-titulo">Tu cuenta</h2>
+        <ul class="list-unstyled mb-0">
+          @if (auth.haySesion()) {
+            <li><a routerLink="/perfil">Mi perfil</a></li>
+            <li><a routerLink="/mis-publicaciones">Mis publicaciones</a></li>
+            <li><a routerLink="/temas/nuevo">Publicar un tema</a></li>
+          } @else {
+            <li><a routerLink="/ingresar">Ingresar</a></li>
+            <li><a routerLink="/registro">Crear cuenta</a></li>
+            <li><a routerLink="/recuperar">Recuperar contraseña</a></li>
+          }
+        </ul>
+      </div>
+    </div>
+    <hr>
+    <p class="small mb-0 pie-texto">
+      © {{ anio }} Tertulia · Proyecto de Desarrollo Full Stack III (DSY2205), Duoc UC.
+    </p>
+  </div>
+</footer>
+
+<app-avisos />
+<app-dialogo />
