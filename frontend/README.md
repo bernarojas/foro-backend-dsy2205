@@ -20,6 +20,13 @@ npm start
 
 Compilar para producción: `npm run build` (deja los archivos en `dist/foro-frontend/browser`).
 
+## Conexión con el BackEnd
+
+La pantalla `/admin/servicios` (solo administrador) llama a los microservicios en
+`/servicios/usuarios`, `/servicios/foro` y `/servicios/moderacion`. En Docker los reenvía nginx a
+cada contenedor (`nginx.conf`); con `npm start` lo hace `proxy.conf.json` hacia `localhost:8081`,
+`8082` y `8083`. El resto de la aplicación trabaja con arreglos y funciona aunque el BackEnd esté abajo.
+
 ## Cuentas de prueba
 
 Todas con la clave `Duoc2026!`: `admin@foro.cl` (administrador), `moderador@foro.cl` (moderador) y

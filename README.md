@@ -14,21 +14,24 @@ Aplicación Full Stack de un foro en línea:
 | `arquetipo` | Maven Archetype | | El arquetipo con el que se generan los microservicios |
 | `database` | Oracle | 1521 | Script de la base (usuario `FORO`, 6 tablas y datos de prueba) |
 
-En esta entrega **el FrontEnd y el BackEnd funcionan por separado**, como pide la actividad: el FrontEnd
-maneja la información con arreglos y el BackEnd se prueba con Postman.
+Como pide la actividad, **el FrontEnd maneja la información con arreglos** y el BackEnd se prueba con
+Postman. Además, el administrador tiene la pantalla **Conexión con el BackEnd**, que hace peticiones
+HTTP reales desde el contenedor del FrontEnd a los tres microservicios para comprobar que los
+contenedores se comunican entre sí y con Oracle.
 
 ```
         Navegador                                Postman
             │                                       │
             ▼                          Authorization: Bearer <token>
    ┌─────────────────┐            ┌────────────┬────────────┬───────────────┐
-   │ frontend :8084  │            │ms-usuarios │  ms-foro   │ ms-moderacion │
-   │ Angular + nginx │            │   :8081    │   :8082    │     :8083     │
-   │ datos: arreglos │            └─────┬──────┴─────┬──────┴───────┬───────┘
+   │ frontend :8084  │ /servicios │ms-usuarios │  ms-foro   │ ms-moderacion │
+   │ Angular + nginx │ ─────────► │   :8081    │   :8082    │     :8083     │
+   │ datos: arreglos │  (proxy)   └─────┬──────┴─────┬──────┴───────┬───────┘
    └─────────────────┘                  │ JPA        │ JPA          │ JPA
                                         ▼            ▼              ▼
                                   ┌───────────────────────────────────────┐
                                   │ Oracle · esquema FORO                 │
+                                  │ (Oracle Cloud, o Oracle Free local)   │
                                   │ FORO_ROL, FORO_USUARIO      ← usuarios│
                                   │ FORO_CATEGORIA, FORO_TEMA,            │
                                   │ FORO_COMENTARIO             ← foro    │
@@ -55,35 +58,50 @@ foro-backend/
 │   └── 02_script_foro.sql        # tablas + datos de prueba (como FORO)
 ├── postman/Foro-DSY2205.postman_collection.json
 ├── docs/
-│   ├── DESPLIEGUE_NUBE.md        # Docker en la nube + Oracle Cloud, paso a paso
+│   ├── ORACLE_CLOUD.md           # Docker Desktop con la base en Oracle Cloud, paso a paso
 │   ├── GUION_VIDEO.md            # guion para la presentación en Kaltura (7 a 10 min)
 │   └── FLUJO_GIT.md              # cómo se organizó el trabajo en git
-├── docker-compose.yml            # todo en local: Oracle + 3 microservicios + frontend
-├── docker-compose.cloud.yml      # nube: 3 microservicios + frontend contra Oracle Cloud
-└── .env.example                  # variables del despliegue en la nube
+├── docker-compose.yml            # todo en Docker: Oracle Free + 3 microservicios + frontend
+├── docker-compose.oracle-cloud.yml   # 3 microservicios + frontend contra Oracle Cloud (wallet)
+└── .env.example                  # variables de la conexión a Oracle Cloud
 ```
 
 ---
 
 ## Cómo ejecutarlo
 
-Requiere Docker Desktop. Desde la raíz del repositorio:
+Todo corre en **Docker Desktop**. Hay dos formas, según dónde esté la base de datos.
+
+### Con la base en Oracle Cloud (la de la entrega)
+
+Requiere crear la base, descargar su wallet en `wallet/` y completar `.env`; los pasos están en
+[docs/ORACLE_CLOUD.md](docs/ORACLE_CLOUD.md). Después:
+
+```bash
+docker compose -f docker-compose.oracle-cloud.yml up -d --build
+```
+
+### Con la base Oracle también en Docker (para desarrollar)
 
 ```bash
 docker compose --profile apps up -d --build
 ```
 
 La primera vez Oracle tarda alrededor de un minuto (crea el usuario `FORO` y ejecuta el script).
-Los microservicios quedan listos unos 15 segundos después de arrancar.
 
-- FrontEnd: http://localhost:8084
+### Direcciones
+
+Los microservicios quedan listos entre 15 y 40 segundos después de arrancar.
+
+- FrontEnd: http://localhost:8084 (como administrador: menú de la cuenta → **Conexión con el BackEnd**)
 - ms-usuarios: http://localhost:8081/api/roles
 - ms-foro: http://localhost:8082/api/categorias
 - ms-moderacion: http://localhost:8083/api/estado
 
 Si el puerto 8084 está ocupado: `FRONTEND_PORT=8090 docker compose --profile apps up -d`.
 
-Para la nube (Docker en un servidor + Oracle Cloud) ver [docs/DESPLIEGUE_NUBE.md](docs/DESPLIEGUE_NUBE.md).
+Comandos útiles: `docker compose ps` (estado de los contenedores), `docker logs foro-ms-foro`
+(registros de un microservicio) y `docker compose --profile apps down` (detener todo).
 
 ### Usuarios de prueba
 
@@ -132,6 +150,7 @@ npm start          # http://localhost:4200
 | Panel de moderación: banear, restaurar, historial | `/moderacion` | MODERADOR, ADMINISTRADOR |
 | Usuarios: crear, cambiar rol, bloquear, eliminar | `/admin/usuarios` | ADMINISTRADOR |
 | Categorías: crear, modificar, eliminar | `/admin/categorias` | ADMINISTRADOR |
+| Conexión con el BackEnd: estado de los 3 microservicios, inicio de sesión real con token y registro de peticiones HTTP | `/admin/servicios` | ADMINISTRADOR |
 
 ### Roles y privilegios
 
@@ -199,6 +218,22 @@ Los datos parten de los arreglos de `core/data/datos-iniciales.ts` (los mismos r
 que el script de Oracle, más algunos extra). Los cambios se guardan también en el almacenamiento del
 navegador para que no se pierdan al recargar; el administrador puede volver a los datos de ejemplo
 desde su menú ("Restablecer datos de ejemplo").
+
+### Comunicación con el BackEnd
+
+La única pantalla que llama a los microservicios es **Conexión con el BackEnd** (`BackendService` en
+`core/services/backend.service.ts`, con `HttpClient`). El navegador pide `/servicios/<microservicio>/...`
+al mismo nginx que sirve el FrontEnd, y nginx lo reenvía por la red de Docker Compose al contenedor
+que corresponde (`/servicios/foro/categorias` → `ms-foro:8082/api/categorias`). Así no hay problemas de
+CORS y el FrontEnd no necesita conocer los puertos de los microservicios. En desarrollo (`npm start`)
+hace lo mismo `proxy.conf.json`.
+
+La pantalla muestra:
+
+- el estado de cada microservicio con datos leídos de Oracle (roles, usuarios, categorías, temas);
+- un inicio de sesión real en `ms-usuarios` y, con el token JWT recibido, dos consultas protegidas
+  en `ms-usuarios` y `ms-moderacion` (un USUARIO recibe 403, una clave errónea 401);
+- el registro de cada petición HTTP con su código y su tiempo de respuesta.
 
 ---
 
@@ -363,7 +398,8 @@ Todos los errores salen en JSON con la misma forma:
 
 Cada solicitud trae pruebas automáticas (código HTTP y contenido). La colección completa son
 **93 solicitudes y 211 verificaciones** sobre los tres microservicios, y al terminar deja los temas y
-comentarios como estaban, así que se puede repetir. Para probar contra la nube basta con cambiar las
-variables `baseUsuarios`, `baseForo` y `baseModeracion` de la colección.
+comentarios como estaban, así que se puede repetir. Funciona igual con la base local o con Oracle
+Cloud, porque siempre llama a los microservicios en `localhost`; si se ejecutan en otro equipo, basta
+con cambiar las variables `baseUsuarios`, `baseForo` y `baseModeracion` de la colección.
 
 También se puede correr desde la consola: `npx newman run postman/Foro-DSY2205.postman_collection.json`.
