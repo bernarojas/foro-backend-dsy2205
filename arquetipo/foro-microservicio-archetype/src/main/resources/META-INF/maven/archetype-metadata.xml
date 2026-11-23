@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<archetype-descriptor name="foro-microservicio-archetype"
+        xmlns="https://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.1.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.1.0 https://maven.apache.org/xsd/archetype-descriptor-1.1.0.xsd">
+
+    <!--
+      Además de groupId, artifactId, version y package (las de todo arquetipo):
+        puerto           obligatorio: el puerto HTTP del microservicio (8081, 8082 y 8083 ya están en uso)
+        descripcion      opcional: va al pom.xml
+        claseAplicacion  opcional: nombre de la clase principal; por defecto sale del
+                         artifactId (ms-moderacion -> MsModeracionApplication)
+    -->
+    <requiredProperties>
+        <requiredProperty key="puerto">
+            <validationRegex>^[0-9]{2,5}$</validationRegex>
+        </requiredProperty>
+        <requiredProperty key="descripcion">
+            <defaultValue>Microservicio del Sistema de Foros en Línea</defaultValue>
+        </requiredProperty>
+        <requiredProperty key="claseAplicacion">
+            <defaultValue>#set( $n = '' )#foreach( $p in $artifactId.split('-') )#set( $n = "${n}${p.substring(0,1).toUpperCase()}${p.substring(1)}" )#end${n}Application</defaultValue>
+        </requiredProperty>
+    </requiredProperties>
+
+    <fileSets>
+        <!-- Código Java: se filtra (package, propiedades) y se ubica bajo el package elegido -->
+        <fileSet filtered="true" packaged="true" encoding="UTF-8">
+            <directory>src/main/java</directory>
+            <includes>
+                <include>**/*.java</include>
+            </includes>
+        </fileSet>
+        <!-- application.properties: se filtra (nombre del servicio y puerto) -->
+        <fileSet filtered="true" encoding="UTF-8">
+            <directory>src/main/resources</directory>
+            <includes>
+                <include>**/*.properties</include>
+            </includes>
+        </fileSet>
+        <!-- Docker: se copian tal cual -->
+        <fileSet encoding="UTF-8">
+            <directory></directory>
+            <includes>
+                <include>Dockerfile</include>
+                <include>.dockerignore</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</archetype-descriptor>
