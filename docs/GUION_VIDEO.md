@@ -13,20 +13,20 @@ de la Semana 5 y lo que reforzó el profesor en el anuncio de la sesión 5:
 ## Antes de grabar
 
 - [ ] Base de Oracle Cloud creada, wallet en `wallet/` y `.env` completo (`docs/ORACLE_CLOUD.md`).
-- [ ] Ejecutar `database/02_script_foro.sql` en Oracle Cloud para partir con los datos limpios.
+- [ ] `bash database/cargar_en_oracle_cloud.sh` para partir con los datos limpios en Oracle Cloud.
 - [ ] `docker compose -f docker-compose.oracle-cloud.yml up -d --build` y esperar a que los cuatro
       contenedores estén arriba.
 - [ ] En el FrontEnd, ingresar como administrador y usar **Restablecer datos de ejemplo**; cerrar sesión.
 - [ ] Postman con la colección importada y la carpeta "0. Inicio de sesión" sin ejecutar.
-- [ ] Consola de Oracle Cloud abierta en **Database Actions → SQL** como `FORO`, con esta consulta lista:
+- [ ] Consola de Oracle Cloud abierta en **Acciones de base de datos → SQL** (entra como `ADMIN`), con esta consulta lista:
 
 ```sql
-SELECT 'FORO_ROL' TABLA, COUNT(*) REGISTROS FROM FORO_ROL
-UNION ALL SELECT 'FORO_USUARIO', COUNT(*) FROM FORO_USUARIO
-UNION ALL SELECT 'FORO_CATEGORIA', COUNT(*) FROM FORO_CATEGORIA
-UNION ALL SELECT 'FORO_TEMA', COUNT(*) FROM FORO_TEMA
-UNION ALL SELECT 'FORO_COMENTARIO', COUNT(*) FROM FORO_COMENTARIO
-UNION ALL SELECT 'FORO_MODERACION', COUNT(*) FROM FORO_MODERACION;
+SELECT 'FORO_ROL' TABLA, COUNT(*) REGISTROS FROM FORO.FORO_ROL
+UNION ALL SELECT 'FORO_USUARIO', COUNT(*) FROM FORO.FORO_USUARIO
+UNION ALL SELECT 'FORO_CATEGORIA', COUNT(*) FROM FORO.FORO_CATEGORIA
+UNION ALL SELECT 'FORO_TEMA', COUNT(*) FROM FORO.FORO_TEMA
+UNION ALL SELECT 'FORO_COMENTARIO', COUNT(*) FROM FORO.FORO_COMENTARIO
+UNION ALL SELECT 'FORO_MODERACION', COUNT(*) FROM FORO.FORO_MODERACION;
 ```
 
 - [ ] Docker Desktop abierto en la pestaña **Containers**, una terminal en la carpeta del proyecto,
