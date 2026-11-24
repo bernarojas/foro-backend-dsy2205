@@ -45,6 +45,15 @@
             <groupId>com.oracle.database.security</groupId>
             <artifactId>oraclepki</artifactId>
         </dependency>
+        <!-- Con el driver 21.x el wallet de Oracle Cloud (cwallet.sso) necesita además osdt_core y osdt_cert -->
+        <dependency>
+            <groupId>com.oracle.database.security</groupId>
+            <artifactId>osdt_core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.database.security</groupId>
+            <artifactId>osdt_cert</artifactId>
+        </dependency>
 
         <!-- BCrypt para guardar las claves (solo el codificador, sin Spring Security completo) -->
         <dependency>
