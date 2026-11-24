@@ -55,7 +55,8 @@ foro-backend/
 ├── ms-moderacion/                # microservicio de moderación (generado con el arquetipo)
 ├── database/
 │   ├── 01_crear_usuario.sql      # crea el usuario/esquema FORO (como SYSTEM o ADMIN)
-│   └── 02_script_foro.sql        # tablas + datos de prueba (como FORO)
+│   ├── 02_script_foro.sql        # tablas + datos de prueba (como FORO)
+│   └── cargar_en_oracle_cloud.sh # carga 02_script_foro.sql en Oracle Cloud con Docker y el wallet
 ├── postman/Foro-DSY2205.postman_collection.json
 ├── docs/
 │   ├── ORACLE_CLOUD.md           # Docker Desktop con la base en Oracle Cloud, paso a paso
@@ -311,7 +312,7 @@ otra vez `02_script_foro.sql`.
 | `JWT_HORAS` | `8` | duración de la sesión |
 | `SHOW_SQL` | `false` | `true` muestra en consola el SQL que se ejecuta en Oracle |
 
-Con Oracle Cloud: `DB_URL=jdbc:oracle:thin:@<nombre_base>_high?TNS_ADMIN=<carpeta del wallet>`.
+Con Oracle Cloud: `DB_URL=jdbc:oracle:thin:@<nombre_base>_tp?TNS_ADMIN=<carpeta del wallet>`.
 
 ### Endpoints
 

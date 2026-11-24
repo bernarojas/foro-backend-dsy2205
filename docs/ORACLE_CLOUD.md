@@ -15,8 +15,8 @@ una **Oracle Cloud Autonomous Database**, a la que los microservicios se conecta
 ```
 
 Se usa `docker-compose.oracle-cloud.yml`, que es igual a `docker-compose.yml` pero sin la base local.
-La conexión con el wallet se probó con un `tnsnames.ora` de prueba contra la base local; la parte TLS
-del wallet real se comprueba al conectarse a Oracle Cloud.
+Probado contra una Autonomous Database *Siempre gratis* (19c, región Santiago, con mTLS): los tres
+microservicios conectan con el wallet y la colección de Postman pasa completa.
 
 ## 1. Crear la base en Oracle Cloud
 
@@ -31,11 +31,10 @@ del wallet real se comprueba al conectarse a Oracle Cloud.
    ```
 
    Conviene usar una clave propia en vez de la de desarrollo; es la que después va en `.env`.
-3. Habilitar el usuario `FORO` en Database Actions (**Database Users → FORO → Enable REST**) o
-   conectarse con SQL Developer y el wallet, y ejecutar `database/02_script_foro.sql` como `FORO`.
-   Al final muestra los conteos: 3, 5, 6, 7, 9 y 2 registros.
-4. En la página de la base: **Database connection → Download wallet**. Se descarga
-   `Wallet_forodb.zip`.
+3. En la página de la base: **Conexión de base de datos → Descargar wallet**. Pide una contraseña para
+   el wallet, que el proyecto no usa. Se descarga `Wallet_forodb.zip`.
+
+Las tablas y los datos de prueba se cargan después, desde el computador (paso 2.3).
 
 ## 2. Preparar el proyecto
 
@@ -55,10 +54,21 @@ del wallet real se comprueba al conectarse a Oracle Cloud.
 
    | Variable | Valor |
    |---|---|
-   | `DB_SERVICIO` | el servicio del wallet, por ejemplo `forodb_high` (están en `wallet/tnsnames.ora`) |
+   | `DB_SERVICIO` | el servicio del wallet terminado en `_tp`, por ejemplo `forodb_tp` (están en `wallet/tnsnames.ora`) |
    | `DB_USER` | `FORO` |
    | `DB_PASSWORD` | la clave del usuario `FORO` |
    | `JWT_SECRET` | una frase de 32 caracteres o más; es la misma para los tres microservicios |
+
+3. Cargar las tablas y los datos de prueba en Oracle Cloud. El script usa el SQL*Plus de la imagen
+   Docker de Oracle, el wallet y el `.env`, así que no hay que instalar nada. Desde Git Bash:
+
+   ```bash
+   bash database/cargar_en_oracle_cloud.sh
+   ```
+
+   Al final muestra los conteos: 3, 5, 6, 7, 9 y 2 registros. Se puede volver a ejecutar para dejar
+   los datos en su estado inicial (por ejemplo, antes de grabar el video). También sirve pegar
+   `database/02_script_foro.sql` en SQL Developer conectado como `FORO`.
 
 ## 3. Levantar
 
@@ -81,11 +91,12 @@ Los microservicios tardan entre 20 y 40 segundos en conectarse a Oracle Cloud la
 | ms-usuarios | http://localhost:8081/api/roles |
 | ms-foro | http://localhost:8082/api/categorias |
 | ms-moderacion | http://localhost:8083/api/estado |
-| Que usa Oracle Cloud | `docker exec foro-ms-usuarios printenv DB_URL` muestra `...@forodb_high?TNS_ADMIN=/wallet` |
+| Que usa Oracle Cloud | `docker exec foro-ms-usuarios printenv DB_URL` muestra `...@forodb_tp?TNS_ADMIN=/wallet` |
 
 En Postman se ejecuta la colección completa sin cambios (apunta a `localhost`). Para ver que los datos
-quedan en Oracle Cloud: consultar las tablas desde **Database Actions → SQL** mientras se ejecutan
-las solicitudes.
+quedan en Oracle Cloud: en **Acciones de base de datos → SQL** (como `ADMIN`) elegir el esquema `FORO`
+en el navegador de la izquierda, o consultar con el prefijo del esquema (`SELECT * FROM FORO.FORO_TEMA`)
+mientras se ejecutan las solicitudes.
 
 Para volver a la base local: `docker compose -f docker-compose.oracle-cloud.yml down` y
 `docker compose --profile apps up -d`.
@@ -95,11 +106,13 @@ Para volver a la base local: `docker compose -f docker-compose.oracle-cloud.yml 
 | Síntoma | Causa habitual |
 |---|---|
 | `ORA-12154` o "could not resolve the connect identifier" | `DB_SERVICIO` no coincide con un nombre de `wallet/tnsnames.ora`, o el wallet no quedó en `wallet/` (los archivos deben estar directamente ahí, no en una subcarpeta) |
+| `NoClassDefFoundError: oracle/security/crypto/core/AuthenticationException` | faltan las librerías del wallet: los `pom.xml` deben incluir `oraclepki`, `osdt_core` y `osdt_cert` (ya están en los tres microservicios y en el arquetipo) |
 | `ORA-01017` | usuario o clave de la base incorrectos en `.env` |
 | `ORA-28000` | la cuenta `FORO` quedó bloqueada en Oracle Cloud (desbloquearla como `ADMIN`) |
 | El microservicio se reinicia en bucle | ver el motivo con `docker logs foro-ms-usuarios` |
 | "Sin respuesta" en la pantalla Conexión con el BackEnd | el microservicio todavía está arrancando o se cayó: `docker compose -f docker-compose.oracle-cloud.yml ps` |
 | El token de un microservicio no sirve en otro | `JWT_SECRET` distinto entre contenedores (deben compartir el mismo `.env`) |
+| La base queda "Aprovisionando" en un porcentaje bajo por mucho rato | la región no tiene capacidad gratuita en ese momento: crearla de nuevo (en nuestro caso funcionó con la versión 19c) o intentarlo más tarde |
 | La base no responde después de unos días | las bases *Always Free* se detienen si no se usan: iniciarla en la consola de Oracle Cloud |
 
 ## Opcional: un servidor con dirección pública
